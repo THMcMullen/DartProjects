@@ -17,8 +17,9 @@ void main() {
   }
   
   logic(){
-    var future = new Future.delayed(const Duration(milliseconds: 15), logic);
+    var future = new Future.delayed(const Duration(milliseconds: 25), logic);
     nexus.update();
+    //logic();
 
   }
 

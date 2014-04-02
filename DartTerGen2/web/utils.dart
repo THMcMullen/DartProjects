@@ -6,6 +6,9 @@ import 'package:vector_math/vector_math.dart';
 import 'dart:typed_data';
 
 
+
+
+
 webgl.Program loadShaderSource(webgl.RenderingContext gl, String vertShaderSource, String fragShaderSource){
   
   webgl.Shader fragShader = gl.createShader(webgl.RenderingContext.FRAGMENT_SHADER);
@@ -30,12 +33,10 @@ webgl.Program loadShaderSource(webgl.RenderingContext gl, String vertShaderSourc
     var s =  gl.deleteProgram(shaderProgram);
     print("$s shaders failed");
     
-  }else{
-    
-    //shaders compiled correctly and should be working
-    return shaderProgram;
-    
   }
+    
+  //shaders compiled correctly and should be working 
+  return shaderProgram;  
   
 }
 

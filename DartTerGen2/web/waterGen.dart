@@ -7,6 +7,8 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 
+
+
 class water{
   
   webgl.RenderingContext gl;
@@ -23,57 +25,96 @@ class water{
   var ind;
   var norm;
   
+  List waterIndices;
   var wVert;
   var waterVert;
   var waterInd;
+  var waterNorm;
+  var wNorm = new List();
   
   var g;
   var h, h1;
   var vx, vx1;
   var vy, vy1;
   
-  var X = 100;
-  var Y = 100;
+  var X = 129;
+  var Y = 129;
   var X1;
   var Y1;  
   
+  
+  var d = 129;
+  
   double t = 0.025;
+  
+  var bigArray;
+  
+  var inter = new List<double>(129*129);
+  
+
   
   water(webgl.RenderingContext givenGl){
     print("Creating Water");
     
-    gl = givenGl;  
+    gl = givenGl;
     
+    
+    setupLand();
     setupBox();
     setupWater();
     
+    
     //for testing, creating a box for the water to be placed in.
+  }
+  
+  void setupLand(){
+    
+   
+    
+    
+    
+    
   }
   
   void setupWater(){
     
     String verts = """
             attribute vec3 aVertexPosition;
-           
+            attribute vec3 aVertexNormal;
+        
+            uniform mat3 uNormalMatrix;
             uniform mat4 uMVMatrix;
             uniform mat4 uPMatrix;
-            uniform mat3 uNormalMatrix;
-        
+      
+            varying vec3 vLighting;
+  
             void main(void) {
                 gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+
+                vec3 ambientLight = vec3(0.6,0.6,1.0);
+                vec3 directionalLightColor = vec3(0.8, 0.8, 0.8);
+                vec3 directionalVector = vec3(1.0, 1.0, 1.0);
+
+                vec3 transformedNormal = uNormalMatrix * aVertexNormal;
+
+                float directional = max(dot(transformedNormal, directionalVector), 0.0);
+                vLighting = ambientLight + (directionalLightColor * directional);
             }""";
 
     String frag = """
             precision mediump float;
       
+            varying vec3 vLighting;
+        
             void main(void) {
-                gl_FragColor = vec4(0.0,0.0,0.9,0.4);
+
+                gl_FragColor = vec4(vLighting, 1.0);
 
             }""";
     
     waterShader = utils.loadShaderSource(gl, verts, frag);
     
-    var attrib = ['aVertexPosition'];
+    var attrib = ['aVertexPosition', 'aVertexNormal'];
     var unif = ['uMVMatrix', 'uPMatrix', 'uNormalMatrix'];
     
     waterAttributes = utils.linkAttributes(gl, waterShader, attrib);
@@ -81,11 +122,11 @@ class water{
     
     
     wVert = new List();
-    var indices = new List();
+    waterIndices = new List();
     
     var pos;
     
-    var d = 100;
+    //d = 129;
     
     waterVert = gl.createBuffer();
     waterInd = gl.createBuffer();
@@ -97,46 +138,59 @@ class water{
         //the possition of the vertic in the indice array we want to draw.
         pos = (i*d+j);
         
-        //print(pos);
+        //top half of square
+        waterIndices.add(pos);
+        waterIndices.add(pos+1);
+        waterIndices.add(pos+d);
         
-        //top half of triangle
-        indices.add(pos);
-        indices.add(pos+1);
-        indices.add(pos+d);
-        
-        //bottem half of triangle
-        indices.add(pos+d);
-        indices.add(pos+d+1);
-        indices.add(pos+1);
-        
-
+        //bottem half of square
+        waterIndices.add(pos+d);
+        waterIndices.add(pos+d+1);
+        waterIndices.add(pos+1);
         
       }
     }
     
     
     gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, waterInd);
-    gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(indices), webgl.STATIC_DRAW);
+    gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(waterIndices), webgl.STATIC_DRAW);
    
     
+    print(waterIndices.length);
+    
     for(double i = 0.0; i < d; i++){
-      for(double j = 0.0; j < d; j++){
-
-        wVert.add((i/10)-2.0);
-        wVert.add(0.45);
-
-        wVert.add((j/10)-2.0);
+      for(double j = 0.0; j < d; j++){        
         
+        wVert.add(((i)-d/4)-24);
+        wVert.add(0.45);
+        wVert.add(((j)-d/4)-24);
         
       }
     } 
-    
    
     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, waterVert);    
     gl.bufferDataTyped(webgl.RenderingContext.ARRAY_BUFFER, new Float32List.fromList(wVert), webgl.DYNAMIC_DRAW);
     
+    
+    
+    
+    for(int i = 0; i < waterIndices.length; i++){
+      wNorm.add(-1.0);
+    }
+    
+    
+    waterNorm = gl.createBuffer();
+    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, waterNorm);
+    gl.bufferData(webgl.ARRAY_BUFFER, new Float32List.fromList(wNorm), webgl.STATIC_DRAW);
+    
+
+      
+      
+    
+    
     initWater();
   }
+
   
   void initWater(){
     X1 = X + 1;
@@ -150,21 +204,27 @@ class water{
     vx1 = new List<double>(X1*Y);
     
     vy = new List<double>(X*Y1);
-    vy1 = new List<double>(X*Y1);
-    
+    vy1 = new List<double>(X*Y1);  
+       
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
-        g[iy*X + ix] = 0.0;
+        
+        g[iy*X + ix] = 0.0;//bigArray[ix][iy];
+        
+
       }
     }
     
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
-        h[iy*X + ix] = math.max(2.0 - g[iy*X + ix], 0);
+        h[iy*X + ix] = math.max(2-(g[iy*X + ix]), 0.1);
+        print(h[iy*X + ix]);
+        
         h1[iy*X + ix] = h[iy*X + ix];
       }
     }
-    
+
+
     for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X1; ix++) {
         vx[iy*X1 + ix]  = 0.0;
@@ -179,7 +239,7 @@ class water{
       }
     }
     
-    for(int iy = 0; iy < Y; iy++) {
+    /*for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X; ix++) {
         double r = math.sqrt((ix - X/2) * (ix - X/2) + (iy - Y/2) * (iy - Y/2));
         
@@ -192,7 +252,123 @@ class water{
           //h[iy*X + ix] += ((Y/4) - r) * ((Y/4) - r);
         }
       }
+    }*/
+    for(int iy = 50; iy < Y-50; iy++) {
+      for(int ix = 50; ix < X-50; ix++) {
+        
+          h[iy*X + ix] += 15.0;
+
+      }
     }
+    
+    
+  }
+  
+  Vector3 calcNormal(int iy, int ix){
+    
+    int ym1 = iy-1;
+    int yp1 = iy+1;
+    int xm1 = ix-1;
+    int xp1 = ix+1;
+    
+    var r = new Vector3.zero();
+    
+    var c = new Vector3.zero();
+    c.x = ix.toDouble();
+    c.y = g[iy*X + ix] + h[iy*X + ix];
+    c.z = ym1.toDouble();
+    
+    if(ix > 0 && iy > 0) {
+      var n = new Vector3.zero();
+      n.x = ix.toDouble();
+      n.y = g[ym1*X + ix] + h[ym1*X + ix];
+      n.z = ym1.toDouble();
+      
+      var w = new Vector3.zero();
+      w.x = xm1.toDouble();
+      w.y = g[iy*X + xm1] + h[iy*X + xm1];
+      w.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = n - c;
+      v = w - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder;          
+    }
+    if(ix < (X-1) && iy > 0) {
+      var n = new Vector3.zero();
+      n.x = ix.toDouble();
+      n.y = g[ym1*X + ix] + h[ym1*X + ix];
+      n.z = ym1.toDouble();
+      
+      var e = new Vector3.zero();
+      e.x = xp1.toDouble();
+      e.y = g[iy*X + xp1] + h[iy*X + xp1];
+      e.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = n - c;
+      v = e - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder;       
+      
+    }
+    
+    if(ix < (X-1) && iy < (Y-1)) {
+      var s = new Vector3.zero();
+      s.x = ix.toDouble();
+      s.y = g[yp1*X + ix] + h[yp1*X + ix];
+      s.z = yp1.toDouble();      
+      
+      var e = new Vector3.zero();
+      e.x = xp1.toDouble();
+      e.y = g[iy*X + xp1] + h[iy*X + xp1];
+      e.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = s - c;
+      v = e - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder; 
+
+    }
+    
+    if(ix > 0 && iy < (Y-1)) {
+      var s = new Vector3.zero();
+      s.x = ix.toDouble();
+      s.y = g[yp1*X + ix] + h[yp1*X + ix];
+      s.z = yp1.toDouble();  
+      
+      var w = new Vector3.zero();
+      w.x = xm1.toDouble();
+      w.y = g[iy*X + xm1] + h[iy*X + xm1];
+      w.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = s - c;
+      v = w - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder; 
+    }  
+    
+    return r;
+    
     
     
     
@@ -209,6 +385,9 @@ class water{
   
   void waterUpdate(){
     
+    
+    //print("h-start");
+    
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
         int ym1 = math.max(iy - 1, 0);
@@ -222,6 +401,8 @@ class water{
         int nx = ax.toInt();
         int ny = ay.toInt();
         
+        
+        
         ax = ax - nx;
         ay = ay - ny;
         
@@ -229,8 +410,13 @@ class water{
         yp1 = math.min(ny+1, Y-1);
         
         h1[iy*X + ix] = h[ny*X + nx]*(1.0-ax)*(1.0-ay) + h[ny*X + xp1]*(ax)*(1.0-ay) + h[yp1*X + nx]*(1.0-ax)*(ay) + h[yp1*X + xp1]*(ax)*(ay);
+
       }    
     }
+    
+    //print("h-end");
+    //print("----------------");
+    //print("vx-start");
     
     for(int iy = 0; iy < Y; iy++) {
       for(int ix = 1; ix < X1-1; ix++) {
@@ -254,6 +440,10 @@ class water{
         vx1[iy*X1 + ix] = vx[ny*X1 + nx]*(1.0-ax)*(1.0-ay) + vx[ny*X1 + xp1]*(ax)*(1.0-ay) + vx[yp1*X1 + nx]*(1.0-ax)*(ay) + vx[yp1*X1 + xp1]*(ax)*(ay);
       }
     }
+    
+    //print("vx-end");
+    //print("----------------");
+    //print("vy-start");
     
     for(int iy = 1; iy < Y1-1; iy++) {
       for(int ix = 0; ix < X; ix++) {
@@ -279,13 +469,16 @@ class water{
     }
     
     //swaps go here
+    //print("vy-end");
+    //print("----------------");
     
-
+    
     swap(h,h1);    
     swap(vx,vx1);
     swap(vy,vy1);
     
    
+    
     
     
     for(int iy = 0; iy < Y; iy++) {
@@ -339,11 +532,11 @@ class water{
     
     var value;
     
-    for(var a = 0; a < 100; a++){
-      for(var b = 0; b < 100; b++){
-          value =(a*100)+(b);
-
-          wVert[(value*3)+1] = h1[a*X+b];
+    for(var a = 0; a < d; a++){
+      for(var b = 0; b < d; b++){
+          value =(a*d)+(b); 
+                              
+          wVert[(value*3)+1] = h[a*X+b];
           
       }
     }  
@@ -351,13 +544,37 @@ class water{
     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, waterVert);  
     gl.bufferSubData(webgl.RenderingContext.ARRAY_BUFFER, 0, new Float32List.fromList(wVert));
     
+    var norm = new List();
+
+    for(int x = 0; x < d ; x++){
+      for(int y = 0; y < d; y++){
+        
+        var r = new Vector3.zero();
+        
+        r = calcNormal(y, x);
+        
+        //r.normalize();
+        
+        norm.add(r.x);
+        norm.add(r.y);
+        norm.add(r.z);
+        
+        
+      }
+    }
+    
+        
+    //print(norm.length);
+    
+    
+    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, waterNorm);
+    gl.bufferSubData(webgl.ARRAY_BUFFER, 0, new Float32List.fromList(norm));
+    
+    
 
     
   }
-  
-  
-  
-  
+
   bool _listsAreEqual(list1, list2) {
     var i=-1;
     return list1.every((val) {
@@ -366,15 +583,6 @@ class water{
       else return list2[i] == val;
     });
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   void setupBox(){
   
@@ -387,6 +595,7 @@ class water{
             uniform mat4 uPMatrix;
       
             varying vec3 vLighting;
+            varying vec3 vColoring;
   
             void main(void) {
                 gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
@@ -400,8 +609,7 @@ class water{
                 float directional = max(dot(transformedNormal, directionalVector), 0.0);
                 vLighting = ambientLight + (directionalLightColor * directional);
 
-
-               
+                vColoring = vec3(aVertexPosition);
 
             }""";
     
@@ -409,9 +617,12 @@ class water{
             precision mediump float;
 
             varying vec3 vLighting;
+            varying vec3 vColoring;
         
             void main(void) {
-                gl_FragColor = vec4(vLighting, 0.9);
+
+                
+                gl_FragColor = vec4(vColoring, 1.0);
 
             }""";
     
@@ -424,104 +635,104 @@ class water{
     attributes = utils.linkAttributes(gl, shader, attrib);
     uniforms = utils.linkUniforms(gl, shader, unif);
     
-    var vert = [// Front face
-                -2.0, -0.5,  2.0,
-                2.0, -0.5,  2.0,
-                2.0,  0.5,  2.0,
-                -2.0,  0.5,  2.0,
+    var rng = new math.Random();
+       
+     var hi = 3;
+     
+     bigArray = new List(d);
+         for(int i = 0; i < d; i++){
+           bigArray[i] = new List(d);
+           for(int j = 0; j < d; j++){
+             bigArray[i][j] = 0.0; 
+           }      
+         }
+         
+         
+     bigArray[0][0] = -2.0;
+                 
+     for(int sideLength = d-1; sideLength >= 2; sideLength = sideLength ~/ 2, hi /=2 ){
+       
+       int halfSide = sideLength~/2;
+       
+       for(int x = 0; x < d-1; x+=sideLength){
+         for(int y = 0; y < d-1; y +=sideLength){
+           
+           double avg = bigArray[x][y]     +
+               bigArray[x+sideLength][y]   +
+               bigArray[x][y+sideLength]   +
+               bigArray[x+sideLength][y+sideLength];
+           
+           
+           avg /= 4.0;
+           
+           double offset = (-hi) + rng.nextDouble() * (hi- (-hi));
+           bigArray[x+halfSide][y+halfSide] = avg + offset;
+           
+         }
+       }
+       
+       for(int x = 0; x < d; x+=halfSide){
+         for(int y = (x+halfSide)%sideLength ; y < d; y+= sideLength){
+           
+           double avg = 
+               bigArray[(x-halfSide+d)%d][y] +
+               bigArray[(x+halfSide)%d][y]   +
+               bigArray[x][(y+halfSide)%d]   +
+               bigArray[x][(y-halfSide+d)%d];
+           
+           avg /= 4;
+           
+           double offset = (-hi) + rng.nextDouble() * (hi- (-hi));
+           
+           //if x == 0 and givenX != 0, set to buffered data
+           //if y == 0 and givenY != 0, ^
+           
+           bigArray[x][y] = avg + offset;
 
-                // Back face
-                -2.0, -0.5, -2.0,
-                -2.0,  0.5, -2.0,
-                2.0,  0.5, -2.0,
-                2.0, -0.5, -2.0,
+         }
+       }          
+     }
+     
 
-                // Top face
-                -1.0,  1.0, -1.0,
-                -1.0,  1.0,  1.0,
-                1.0,  1.0,  1.0,
-                1.0,  1.0, -1.0,
+     
+     for(int i = 0; i < X; i++){
+       for(int j = 0; j < Y; j++){
+         bigArray[i][j] = 0.0;//bigArray[i][j] + bigArray[i][j];
+       }
+     }
+     
+     for(int i = 50; i < X-50; i++){
+       for(int j = 50; j < Y-50; j++){
+         bigArray[i][j] = 15.0;
+       }
+     }
 
-                // Bottom face
-                -2.0, -0.5, -2.0,
-                2.0, -0.5, -2.0,
-                2.0, -0.5,  2.0,
-                -2.0, -0.5,  2.0,
+     
+     
+     var vert = new List();
+     for(double i = 0.0; i < d; i++){
+       for(double j = 0.0; j < d; j++){
 
-                // Right face
-                2.0, -0.5, -2.0,
-                2.0,  0.5, -2.0,
-                2.0,  0.5,  2.0,
-                2.0, -0.5,  2.0,
+         vert.add(((i)-d/4)-24);
+         vert.add((bigArray[j.toInt()][i.toInt()]));
+         vert.add(((j)-d/4)-24);
 
-                // Left face
-                -2.0, -0.5, -2.0,
-                -2.0, -0.5,  2.0,
-                -2.0,  0.5,  2.0,
-                -2.0,  0.5, -2.0
-                ];
+          //print(bigArray[j.toInt()][i.toInt()]);         
+         
+         
+       }
+     } 
+     
     boxVert = gl.createBuffer();
     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, boxVert);
     gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(vert), webgl.STATIC_DRAW);
+
     
-    norm = gl.createBuffer();
-    gl.bindBuffer(webgl.ARRAY_BUFFER, norm);
-    
-    var vertexNormals = [
-                         // Front
-                         0.0,  0.0,  1.0,
-                         0.0,  0.0,  1.0,
-                         0.0,  0.0,  1.0,
-                         0.0,  0.0,  1.0,
-                         
-                         // Back
-                         0.0,  0.0, -1.0,
-                         0.0,  0.0, -1.0,
-                         0.0,  0.0, -1.0,
-                         0.0,  0.0, -1.0,
-                         
-                         // Top
-                         0.0,  1.0,  0.0,
-                         0.0,  1.0,  0.0,
-                         0.0,  1.0,  0.0,
-                         0.0,  1.0,  0.0,
-                         
-                         // Bottom
-                         0.0, -1.0,  0.0,
-                         0.0, -1.0,  0.0,
-                         0.0, -1.0,  0.0,
-                         0.0, -1.0,  0.0,
-                         
-                         // Right
-                         1.0,  0.0,  0.0,
-                         1.0,  0.0,  0.0,
-                         1.0,  0.0,  0.0,
-                         1.0,  0.0,  0.0,
-                         
-                         // Left
-                         -1.0,  0.0,  0.0,
-                         -1.0,  0.0,  0.0,
-                         -1.0,  0.0,  0.0,
-                         -1.0,  0.0,  0.0
-                         ];
-    
-    gl.bufferData(webgl.ARRAY_BUFFER, new Float32List.fromList(vertexNormals), webgl.STATIC_DRAW);
-    
-    ind = gl.createBuffer();
-    gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, ind);
-    gl.bufferDataTyped(webgl.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList([
-                0, 1, 2,      0, 2, 3,    // Front face
-                4, 5, 6,      4, 6, 7,    // Back face
-                //8, 9, 10,     8, 10, 11,  // Top face
-                12, 13, 14,   12, 14, 15, // Bottom face
-                16, 17, 18,   16, 18, 19, // Right face
-                20, 21, 22,   20, 22, 23  // Left face
-                ]), webgl.STATIC_DRAW);
+
 
   }
   
-  
-  void draw(Matrix4 viewMat, Matrix4 projectMat){
+   void draw(Matrix4 viewMat, Matrix4 projectMat){
     drawBox(viewMat, projectMat);
     drawWater(viewMat, projectMat);
   }
@@ -536,12 +747,12 @@ class water{
     gl.bindBuffer(webgl.ARRAY_BUFFER, boxVert);
     gl.vertexAttribPointer(attributes['aVertexPosition'], 3, webgl.FLOAT, false, 0, 0);
     
-    gl.enableVertexAttribArray(attributes['aVertexNormal']);
-    gl.bindBuffer(webgl.ARRAY_BUFFER, norm);
-    gl.vertexAttribPointer(attributes['aVertexNormal'], 3, webgl.FLOAT, false, 0, 0);
+    //gl.enableVertexAttribArray(attributes['aVertexNormal']);
+    //gl.bindBuffer(webgl.ARRAY_BUFFER, norm);
+    //gl.vertexAttribPointer(attributes['aVertexNormal'], 3, webgl.FLOAT, false, 0, 0);
     
-    gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, ind);
-    gl.drawElements(webgl.TRIANGLES, 30, webgl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, waterInd);
+    gl.drawElements(webgl.TRIANGLES, waterIndices.length, webgl.UNSIGNED_SHORT, 0);
 
     
   }
@@ -555,10 +766,17 @@ class water{
     gl.enableVertexAttribArray(waterAttributes['aVertexPosition']);
     gl.bindBuffer(webgl.ARRAY_BUFFER, waterVert);
     gl.vertexAttribPointer(waterAttributes['aVertexPosition'], 3, webgl.FLOAT, false, 0, 0);
+    
+    gl.enableVertexAttribArray(waterAttributes['aVertexNormal']);
+    gl.bindBuffer(webgl.ARRAY_BUFFER, waterNorm);
+    gl.vertexAttribPointer(waterAttributes['aVertexNormal'], 3, webgl.FLOAT, false, 0, 0);
 
         
     gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, waterInd);
-    gl.drawElements(webgl.TRIANGLES, 58806, webgl.UNSIGNED_SHORT, 0);
+    gl.drawElements(webgl.TRIANGLES, waterIndices.length, webgl.UNSIGNED_SHORT, 0);
+    //gl.drawElements(webgl.TRIANGLE_STRIP, 480, webgl.UNSIGNED_SHORT, 0);
+    
+    //print(waterIndices.length);
     
     
   }
