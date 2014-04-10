@@ -161,9 +161,9 @@ class water{
     for(double i = 0.0; i < d; i++){
       for(double j = 0.0; j < d; j++){        
         
-        wVert.add(((i)-d/4)-24);
+        wVert.add(((i)-d/20)-48);
         wVert.add(0.45);
-        wVert.add(((j)-d/4)-24);
+        wVert.add(((j)-d/20)-48);
         
       }
     } 
@@ -209,21 +209,22 @@ class water{
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
         
-        g[iy*X + ix] = 0.0;//bigArray[ix][iy];
-        
+        g[iy*X + ix] = bigArray[ix][iy];
+        if(bigArray[ix][ix] < 0.0){
+          //print(bigArray[ix][ix]);
+        }
 
       }
     }
     
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
-        h[iy*X + ix] = math.max(2-(g[iy*X + ix]), 0.1);
-        print(h[iy*X + ix]);
-        
-        h1[iy*X + ix] = h[iy*X + ix];
+        h[iy*X + ix] = math.max(1.0 - g[iy*X + ix], 0.0);
+        h1[iy*X + ix] = h[iy*X + ix];        
       }
     }
-
+    print(g[35*X+35]);
+    print(h[35*X+35]);
 
     for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X1; ix++) {
@@ -256,7 +257,7 @@ class water{
     for(int iy = 50; iy < Y-50; iy++) {
       for(int ix = 50; ix < X-50; ix++) {
         
-          h[iy*X + ix] += 15.0;
+          h[iy*X + ix] += 5.0;
 
       }
     }
@@ -409,8 +410,13 @@ class water{
         xp1 = math.min(nx+1, X-1);
         yp1 = math.min(ny+1, Y-1);
         
+        //print(iy*X + ix);
+        
         h1[iy*X + ix] = h[ny*X + nx]*(1.0-ax)*(1.0-ay) + h[ny*X + xp1]*(ax)*(1.0-ay) + h[yp1*X + nx]*(1.0-ax)*(ay) + h[yp1*X + xp1]*(ax)*(ay);
-
+        /*if( g[iy*X + ix] - h1[iy*X + ix]  < 0.0 && h1[iy*X + ix] != 0.0){
+          h1[iy*X + ix] = h[iy*X + ix];
+        }*/
+     
       }    
     }
     
@@ -424,7 +430,7 @@ class water{
         int xm1 = math.max(ix - 1, 0);
         int xp1 = math.min(ix + 1, X-1);
         int yp1 = math.min(iy + 1, Y1-1);
-        
+               
         double ax = ix -   vx[iy*X1 +  ix] * t;
         double ay = iy - ((vy[iy*X + xm1] + vy[iy*X + ix] + vy[yp1*X + xm1] + vy[yp1*X + ix])/4.0) * t;
         
@@ -436,6 +442,8 @@ class water{
         
         xp1 = math.min(nx+1, X1-1);
         yp1 = math.min(ny+1, Y-1);
+        
+        
 
         vx1[iy*X1 + ix] = vx[ny*X1 + nx]*(1.0-ax)*(1.0-ay) + vx[ny*X1 + xp1]*(ax)*(1.0-ay) + vx[yp1*X1 + nx]*(1.0-ax)*(ay) + vx[yp1*X1 + xp1]*(ax)*(ay);
       }
@@ -473,6 +481,8 @@ class water{
     //print("----------------");
     
     
+    //print(h[35*X+35]);
+    
     swap(h,h1);    
     swap(vx,vx1);
     swap(vy,vy1);
@@ -489,6 +499,10 @@ class water{
         int yp1 = math.min(iy + 1, Y-1);
         
          h[iy*X + ix] = h[iy*X + ix] + h[iy*X + ix] * ((vx[iy*X1 + ix] - vx[iy*X1 + ix+1]) + (vy[iy*X + ix] - vy[(iy+1)*X + ix])) * t;
+         /*if( g[iy*X + ix] - h[iy*X + ix] < 0.0 && h[iy*X + ix] != 0.0){
+           //print(h[iy*X + ix]);
+           h[iy*X + ix] = h1[iy*X + ix];
+         }*/
 
       }
     }
@@ -502,7 +516,13 @@ class water{
         int xp1 = math.min(ix + 1, X-1);
         int yp1 = math.min(iy + 1, Y-1);
         
-        vx1[iy*X1 + ix] = vx[iy*X1 + ix] + 9.8 * ((g[iy*X + xm1] + h[iy*X + xm1]) - (g[iy*X + ix] + h[iy*X + ix])) * t;
+        
+        //if(g[iy*X + ix] < h[iy*X + ix]){
+         // h[iy*X + ix] = 0.0;          
+         // vx1[iy*X1 + ix] = vx[iy*X1 + ix];
+        //}else{
+          vx1[iy*X1 + ix] = vx[iy*X1 + ix] + 9.8 * ((g[iy*X + xm1] + h[iy*X + xm1]) - (g[iy*X + ix] + h[iy*X + ix])) * t;
+        //}
         
       }
     }
@@ -516,8 +536,12 @@ class water{
         int xp1 = math.min(ix + 1, X-1);
         int yp1 = math.min(iy + 1, Y-1);
         
-       
+        //if(g[iy*X + ix] < h[iy*X + ix]){
+          //h[iy*X + ix] = 0.0;
+         // vy1[iy*X + ix] = vy[iy*X + ix];
+       // }else{
         vy1[iy*X + ix] = vy[iy*X + ix] + 9.8 * ((g[ym1*X + ix] + h[ym1*X + ix]) - (g[iy*X + ix] + h[iy*X + ix])) * t;
+       // }
       }
     }
     
@@ -536,7 +560,7 @@ class water{
       for(var b = 0; b < d; b++){
           value =(a*d)+(b); 
                               
-          wVert[(value*3)+1] = h[a*X+b];
+          wVert[(value*3)+1] = h[a*X+b] + g[a*X+b];
           
       }
     }  
@@ -621,8 +645,19 @@ class water{
         
             void main(void) {
 
+                vec4 color = vec4(vColoring,1);
+                float alpha = vColoring.y / 5.0;
+
+
+                if(vColoring.y < 0.0)
+                  color = vec4(0.0, 0.0,1.0, 1.0+alpha );
+                else if(vColoring.y < 1.0)
+                  color = vec4(0.3+alpha, 0.8, 0.3+alpha, 1.0);
+                else
+                  color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
+        
+                gl_FragColor = color;
                 
-                gl_FragColor = vec4(vColoring, 1.0);
 
             }""";
     
@@ -637,18 +672,18 @@ class water{
     
     var rng = new math.Random();
        
-     var hi = 3;
+     var hi = 10;
      
      bigArray = new List(d);
          for(int i = 0; i < d; i++){
            bigArray[i] = new List(d);
            for(int j = 0; j < d; j++){
-             bigArray[i][j] = 0.0; 
+             bigArray[i][j] = 0.1; 
            }      
          }
          
          
-     bigArray[0][0] = -2.0;
+     bigArray[0][0] = 2.0;
                  
      for(int sideLength = d-1; sideLength >= 2; sideLength = sideLength ~/ 2, hi /=2 ){
        
@@ -697,25 +732,31 @@ class water{
      
      for(int i = 0; i < X; i++){
        for(int j = 0; j < Y; j++){
-         bigArray[i][j] = 0.0;//bigArray[i][j] + bigArray[i][j];
+         bigArray[i][j] = 0.0; 
        }
      }
      
      for(int i = 50; i < X-50; i++){
        for(int j = 50; j < Y-50; j++){
-         bigArray[i][j] = 15.0;
+         bigArray[i][j] = 5.0;
        }
      }
-
+     
+     /*for(int i = 30; i < 40; i++){
+           for(int j = 30; j < 40; j++){
+             bigArray[i][j] += 5.0;
+           }
+         }
+*/
      
      
      var vert = new List();
      for(double i = 0.0; i < d; i++){
        for(double j = 0.0; j < d; j++){
 
-         vert.add(((i)-d/4)-24);
+         vert.add(((i)-d/20)-48);
          vert.add((bigArray[j.toInt()][i.toInt()]));
-         vert.add(((j)-d/4)-24);
+         vert.add(((j)-d/20)-48);
 
           //print(bigArray[j.toInt()][i.toInt()]);         
          
