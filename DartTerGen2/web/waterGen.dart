@@ -49,7 +49,7 @@ class water{
   
   var bigArray;
   
-  var inter = new List<double>(129*129);
+  //var inter = new List<double>(129*129);
   
 
   
@@ -156,7 +156,7 @@ class water{
     gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(waterIndices), webgl.STATIC_DRAW);
    
     
-    print(waterIndices.length);
+    //print(waterIndices.length);
     
     for(double i = 0.0; i < d; i++){
       for(double j = 0.0; j < d; j++){        
@@ -211,7 +211,7 @@ class water{
         
         g[iy*X + ix] = bigArray[ix][iy];
         if(bigArray[ix][ix] < 0.0){
-          //print(bigArray[ix][ix]);
+          print(bigArray[ix][ix]);
         }
 
       }
@@ -219,12 +219,12 @@ class water{
     
     for(int iy = 0; iy < Y; iy++){
       for(int ix = 0; ix < X; ix++){
-        h[iy*X + ix] = math.max(1.0 - g[iy*X + ix], 0.0);
+        h[iy*X + ix] = math.max(g[iy*X + ix]+0.1, 0.0);
         h1[iy*X + ix] = h[iy*X + ix];        
       }
     }
-    print(g[35*X+35]);
-    print(h[35*X+35]);
+    //print(g[35*X+35]);
+    //print(h[35*X+35]);
 
     for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X1; ix++) {
@@ -240,7 +240,7 @@ class water{
       }
     }
     
-    /*for(int iy = 0; iy < Y; iy++) {
+   /* for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X; ix++) {
         double r = math.sqrt((ix - X/2) * (ix - X/2) + (iy - Y/2) * (iy - Y/2));
         
@@ -253,7 +253,7 @@ class water{
           //h[iy*X + ix] += ((Y/4) - r) * ((Y/4) - r);
         }
       }
-    }*/
+    }*//*
     for(int iy = 50; iy < Y-50; iy++) {
       for(int ix = 50; ix < X-50; ix++) {
         
@@ -261,7 +261,7 @@ class water{
 
       }
     }
-    
+    */
     
   }
   
@@ -407,15 +407,22 @@ class water{
         ax = ax - nx;
         ay = ay - ny;
         
+        if(nx < 0 || nx > X-1) {
+          print("($ax, $ay)\n");
+          print("($nx, $ny)\n");
+        }
+        if(ny < 0 || ny > Y-1) {
+          print("($ax, $ay)\n");
+          print("($nx, $ny)\n");
+        }
+        
         xp1 = math.min(nx+1, X-1);
         yp1 = math.min(ny+1, Y-1);
         
         //print(iy*X + ix);
         
         h1[iy*X + ix] = h[ny*X + nx]*(1.0-ax)*(1.0-ay) + h[ny*X + xp1]*(ax)*(1.0-ay) + h[yp1*X + nx]*(1.0-ax)*(ay) + h[yp1*X + xp1]*(ax)*(ay);
-        /*if( g[iy*X + ix] - h1[iy*X + ix]  < 0.0 && h1[iy*X + ix] != 0.0){
-          h1[iy*X + ix] = h[iy*X + ix];
-        }*/
+        //h1[iy*X + ix] = h1[iy*X + ix].abs();
      
       }    
     }
@@ -503,7 +510,7 @@ class water{
            //print(h[iy*X + ix]);
            h[iy*X + ix] = h1[iy*X + ix];
          }*/
-
+         //h[iy*X + ix] = h[iy*X + ix].abs();
       }
     }
     
@@ -536,6 +543,10 @@ class water{
         int xp1 = math.min(ix + 1, X-1);
         int yp1 = math.min(iy + 1, Y-1);
         
+        if((h[iy*X + ix]) < 0.0){
+          //print(h[iy*X + ix]);
+        }
+        
         //if(g[iy*X + ix] < h[iy*X + ix]){
           //h[iy*X + ix] = 0.0;
          // vy1[iy*X + ix] = vy[iy*X + ix];
@@ -544,6 +555,9 @@ class water{
        // }
       }
     }
+    
+    
+    //print(vx1[130]);
     
     //swap(h,h1);
     swap(vx,vx1);
@@ -650,7 +664,7 @@ class water{
 
 
                 if(vColoring.y < 0.0)
-                  color = vec4(0.0, 0.0,1.0, 1.0+alpha );
+                  color = vec4(0.3+alpha, 0.8, 0.3+alpha, 1.0 );
                 else if(vColoring.y < 1.0)
                   color = vec4(0.3+alpha, 0.8, 0.3+alpha, 1.0);
                 else
@@ -728,27 +742,36 @@ class water{
        }          
      }
      
-
+     var min = 0.0;
      
+     /*for(int i = 0; i < X; i++){
+       for(int j = 0; j < Y; j++){
+         if(bigArray[i][j] < min){
+           min = bigArray[i][j];
+         }//+= 0.0;//(i.toDouble() + j.toDouble()) / 10;; 
+       }
+     }*/
      for(int i = 0; i < X; i++){
        for(int j = 0; j < Y; j++){
-         bigArray[i][j] = 0.0; 
+         bigArray[i][j] = min.abs();//(i.toDouble() + j.toDouble()) / 10;; 
        }
      }
+     
+     //print(min);
      
      for(int i = 50; i < X-50; i++){
        for(int j = 50; j < Y-50; j++){
-         bigArray[i][j] = 5.0;
+         bigArray[i][j] += 5.0;
        }
      }
-     
-     /*for(int i = 30; i < 40; i++){
+     /*
+     for(int i = 30; i < 40; i++){
            for(int j = 30; j < 40; j++){
-             bigArray[i][j] += 5.0;
+             bigArray[i][j] += 15.0;
            }
          }
-*/
-     
+
+    */ 
      
      var vert = new List();
      for(double i = 0.0; i < d; i++){
@@ -763,6 +786,7 @@ class water{
          
        }
      } 
+     
      
     boxVert = gl.createBuffer();
     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, boxVert);

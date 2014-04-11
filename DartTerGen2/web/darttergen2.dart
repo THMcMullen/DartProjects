@@ -11,21 +11,48 @@ void main() {
   
   var nexus = new core(gl, canvas);
   
+  bool auto = true;
+  
   render(time){
+    
     window.requestAnimationFrame(render);
     nexus.draw();
+    
   }
   
   logic(){
-    var future = new Future.delayed(const Duration(milliseconds: 25), logic);
-    nexus.update();
+    
+    var future = new Future.delayed(const Duration(milliseconds: 1), logic);
+    
+    if(auto){
+      nexus.update();
+    }
+    
     //logic();
 
   }
+  
+  keyDown(KeyboardEvent e){
+    //hit space to update the water sim one time step
+    if(e.keyCode == 32){
+      nexus.update();
+    }
+    //hit "A" to make the simulation run automatically, or off
+    if(e.keyCode == 65){
+       auto == true? auto = false : auto = true;
+     }
+     
+    
+    //print(e.keyCode);
+  }
 
+
+
+  window.onKeyDown.listen(keyDown);
   
   logic();
   render(1);
 
   
 }
+
