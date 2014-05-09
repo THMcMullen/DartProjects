@@ -25,12 +25,15 @@ class land extends object{
   int width = 2;
   
   
-  land(givenGL, location){
+  land(givenGL, location, y){
     gl = givenGL;
     gridPos = location;
     
-    posy = (meshLength()/width).floor();
-    posx = meshLength()%width;
+    //print(y);
+    
+    
+    posy = location; //(meshLength()/width).floor();
+    posx = y; //meshLength()%width;
     
     //shaders to color the landscape based on height
     String vertex = """
@@ -79,7 +82,7 @@ class land extends object{
           else
             color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
       
-          gl_FragColor = color;
+          gl_FragColor = vec4(vLighting.x*color.x, vLighting.y * color.y, vLighting.z*color.z,1.0);
           
     
     }""";
@@ -111,10 +114,24 @@ class land extends object{
    heightMap[d-1][0] = 0.0;
    heightMap[d-1][d-1] = 0.0;
    
+  int below = 0;
+  int beside = 0;
+  
+  for(int i = 0; i < meshLength(); i++){
+    if((meshHeightMap(i).posx == posx-1) && (meshHeightMap(i).posy == posy)){
+      //print("below me is $i");   
+      below = i;
+    }
+    if((meshHeightMap(i).posx == posx) && (meshHeightMap(i).posy == (posy-1))){
+      //print("beside me is $i");   
+      beside = i;
+    }
+    
+  }
+   
 
    
-   
-             
+      
    for(int sideLength = d-1; sideLength >= 2; sideLength = sideLength ~/ 2, hi /=2 ){
    
     int halfSide = sideLength~/2;
@@ -155,17 +172,21 @@ class land extends object{
           
           if(posx != 0){
             if(y == 0){
-              heightMap[x][y] = meshHeightMap((posx-1)+(posy*width)).heightMap[x][d-1];
+              heightMap[x][y] = meshHeightMap(below).heightMap[x][d-1];
             }
           }
+          //data from grid below
           if(posy != 0){
             if(x == 0){
-              heightMap[x][y] = meshHeightMap((posx+(posy*width)-width)).heightMap[d-1][y];
+              heightMap[x][y] = meshHeightMap(beside).heightMap[d-1][y];
             }
           }
+          
+          
         }
       }
     }
+   
    
    List smooth = new List(d);
    
@@ -189,8 +210,7 @@ class land extends object{
    
    
    
-   
-
+ 
    
     var vert = new List();
     for(double i = 0.0; i < d; i++){
@@ -234,7 +254,138 @@ class land extends object{
     
     //print(meshLength());
     
+    var norm = new List();
+
+    for(int x = 0; x < d ; x++){
+      for(int y = 0; y < d; y++){
+        
+        var r = new Vector3.zero();
+        
+        r = calcNormal(y, x);
+        
+        r.normalize();
+        
+        norm.add(r.x);
+        norm.add(r.y);
+        norm.add(r.z);
+        
+        
+      }
+    }
+    
+    normals = gl.createBuffer();
+    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, normals);
+    gl.bufferData(webgl.ARRAY_BUFFER, new Float32List.fromList(norm), webgl.STATIC_DRAW);
+    
   }
+  
+  Vector3 calcNormal(int iy, int ix){
+    int ym1 = iy-1;
+    int yp1 = iy+1;
+    int xm1 = ix-1;
+    int xp1 = ix+1;
+    
+    var r = new Vector3.zero();
+    
+    var c = new Vector3.zero();
+    c.x = ix.toDouble();
+    c.y = heightMap[ix][iy];
+    c.z = ym1.toDouble();
+    
+    if(ix > 0 && iy > 0) {
+      var n = new Vector3.zero();
+      n.x = ix.toDouble();
+      n.y = heightMap[ix][ym1];
+      n.z = ym1.toDouble();
+      
+      var w = new Vector3.zero();
+      w.x = xm1.toDouble();
+      w.y = heightMap[xm1][iy];
+      w.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = n - c;
+      v = w - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder;          
+    }
+    if(ix < (128) && iy > 0) {
+      var n = new Vector3.zero();
+      n.x = ix.toDouble();
+      n.y = heightMap[ix][ym1];
+      n.z = ym1.toDouble();
+      
+      var e = new Vector3.zero();
+      e.x = xp1.toDouble();
+      e.y = heightMap[xp1][iy];
+      e.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = n - c;
+      v = e - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder;       
+      
+    }
+    
+    if(ix < (128) && iy < (128)) {
+      var s = new Vector3.zero();
+      s.x = ix.toDouble();
+      s.y = heightMap[ix][yp1];
+      s.z = yp1.toDouble();      
+      
+      var e = new Vector3.zero();
+      e.x = xp1.toDouble();
+      e.y = e.y = heightMap[xp1][iy];
+      e.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = s - c;
+      v = e - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder; 
+
+    }
+    
+    if(ix > 0 && iy < (128)) {
+      var s = new Vector3.zero();
+      s.x = ix.toDouble();
+      s.y = heightMap[ix][yp1];
+      s.z = yp1.toDouble();  
+      
+      var w = new Vector3.zero();
+      w.x = xm1.toDouble();
+      w.y = heightMap[xm1][iy];
+      w.z = iy.toDouble();
+      
+      var u = new Vector3.zero();
+      var v = new Vector3.zero();
+      var rHolder = new Vector3.zero();
+      
+      u = s - c;
+      v = w - c;
+      cross3(u,v,rHolder);
+      
+      r = r + rHolder; 
+    }  
+    
+    return r;
+    
+  }
+  
+
   
   update(){
     print("Creating Landscape");
@@ -260,6 +411,10 @@ class land extends object{
     gl.enableVertexAttribArray(attribute['aVertexPosition']);
     gl.bindBuffer(webgl.ARRAY_BUFFER, vertices);
     gl.vertexAttribPointer(attribute['aVertexPosition'], 3, webgl.FLOAT, false, 0, 0);
+    
+    gl.enableVertexAttribArray(attribute['aVertexNormal']);
+    gl.bindBuffer(webgl.ARRAY_BUFFER, normals);
+    gl.vertexAttribPointer(attribute['aVertexNormal'], 3, webgl.FLOAT, false, 0, 0);
     
     gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, indices);
     gl.drawElements(webgl.TRIANGLES, landIndices.length, webgl.UNSIGNED_SHORT, 0);

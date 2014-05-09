@@ -25,6 +25,7 @@ class object{
   
   var indices;
   var vertices;
+  var normals;
   
   
    

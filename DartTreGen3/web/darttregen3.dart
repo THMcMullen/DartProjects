@@ -17,12 +17,15 @@ void main() {
   //set up the enviroment
   nexus.setup();
   
+  double locX = 0.0;
+  double locY = 0.0;
+  
   bool auto = true;
    
   //create a rneder loop
   render(time){
     window.requestAnimationFrame(render);
-    nexus.draw(); 
+    nexus.draw(locX, locY); 
   }
   
   //insures the logic will not be tied to the frame rate.
@@ -42,8 +45,25 @@ void main() {
       nexus.update();
     }
     //hit "A" to make the simulation run automatically, or off
-    if(e.keyCode == 65){
+    if(e.keyCode == 223){
       auto == true? auto = false : auto = true;
+    }
+    
+    //W == 87  
+    if(e.keyCode == 87){
+      locX += 1.0;
+    }
+    //S == 83
+    if(e.keyCode == 83){
+      locX -= 1.0;
+    }
+    //A == 65
+    if(e.keyCode == 65){
+      locY -= 1.0;
+    }
+    //D == 68
+    if(e.keyCode == 68){
+      locY += 1.0;
     }
     
     //print(e.keyCode);

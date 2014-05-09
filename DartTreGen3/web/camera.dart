@@ -15,12 +15,18 @@ class camera{
   var movingX2;
   var movingY2;
   
+  
+  
   var orbitX = 0.0;
   var orbitY = 0.0;
-  var distance = 120.0;
+  var distance = 20.0;
+  
+  Vector3 pos = new Vector3(0.0,0.0,0.0);
+  Vector3 direction = new Vector3(0.0,0.0,0.0);
   
   Vector3 vector = new Vector3(0.0,0.0,0.0);
   Matrix4 viewMat = new Matrix4.identity();
+  Matrix4 cameraMat = new Matrix4.identity();
   
   var dirty = true;
   
@@ -35,12 +41,94 @@ class camera{
     
     canvas.onMouseUp.listen(mouseUp);
     
-    canvas.onTouchStart.listen(touchDown);
+    window.onKeyDown.listen(keyDown);
     
-    canvas.onTouchMove.listen(touchMove);
+    //canvas.onTouchStart.listen(touchDown);
+    
+    //canvas.onTouchMove.listen(touchMove);
     
     
   }
+  
+  Vector3 getCurrentXY(){
+    return direction;
+  }
+  
+  updateDirection(level){
+    pos[2] = level;
+  }
+  
+  keyDown(KeyboardEvent e){
+  
+    //W == 87  
+    if(e.keyCode == 87){
+      pos[1] -= 1.0;
+    }
+    //S == 83
+    if(e.keyCode == 83){
+      pos[1] += 1.0;
+    }
+    //A == 65
+    if(e.keyCode == 65){
+      pos[0] -= 1.0;
+    }
+    //D == 68
+    if(e.keyCode == 68){
+      pos[0] += 1.0;
+    }
+    
+    //print(e.keyCode);
+  }
+  
+  update(){
+  
+    Matrix4 cm = cameraMat;
+    cm = new Matrix4.identity();
+    cm.rotateX(orbitX);
+    cm.rotateY(orbitY);
+    cm.invert();
+    //pos[1] = pos[1]-10.0;
+    pos.applyProjection(cm);
+    
+    
+    direction.add(pos);
+    //direction[1] = pos[1];
+    
+    pos.setZero();
+    
+    dirty = true;
+  }
+  
+  Matrix4 getViewMat(){
+    
+    if(dirty){
+      Matrix4 mv = viewMat;
+      mv = new Matrix4.identity();
+      //if i want to movearound the world use this
+     /* mv.translate(0.0, 0.0, -distance);
+      
+      mv.rotateX(orbitX + (3.14/2));
+      mv.translate(vector);
+      mv.rotateX(-(3.14/2));
+      mv.rotateY(orbitY);*/
+      
+      //For a fps view
+      
+      mv.rotateX(orbitX-(3.14/2));
+      mv.rotateY(orbitY);
+      mv.rotateZ(0.0);
+      mv.translate(direction);
+      
+      
+      dirty = false;
+      
+      viewMat = mv;
+    }
+    
+    return viewMat;
+  }
+
+  
   
   void touchMove(TouchEvent event){
       
@@ -163,25 +251,9 @@ class camera{
     moving = false;
   }
   
-  Matrix4 getViewMat(){
-    
-    if(dirty){
-      Matrix4 mv = viewMat;
-      mv = new Matrix4.identity();
-      //if i want to movearound the world use this
-      mv.translate(0.0, 0.0, -distance);
-      
-      mv.rotateX(orbitX + (3.14/2));
-      mv.translate(vector);
-      mv.rotateX(-(3.14/2));
-      mv.rotateY(orbitY);
-      
-      dirty = false;
-      
-      viewMat = mv;
-    }
-    
-    return viewMat;
-  }
+
+  
+  
+  
   
 }

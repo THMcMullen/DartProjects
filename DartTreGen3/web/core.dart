@@ -23,6 +23,10 @@ class core{
   
   var camera;
   
+  bool tile = false;
+  
+  Vector3 playerPos = new Vector3.zero();
+  
   //stores all the objects which need to be rendered at any given time
   List<object> containerClass;
   
@@ -50,12 +54,15 @@ class core{
     
     //First create the landscape
     for(int i = 0; i < 4; i++){
-      containerClass.add(new land(gl, 2));
-      containerClass[0].updateMesh(containerClass[i]);
+      for(int j = 0; j < 4; j++){
+        containerClass.add(new land(gl, i, j));
+        
+        containerClass[0].updateMesh(containerClass[j+(i*4)]);
+      }
     }
     
-    containerClass.add(new water(gl));
-    containerClass.add(new water(gl));
+    //containerClass.add(new water(gl));
+    //containerClass.add(new water(gl));
 
     
     //adds the mesh we have created to the master list stored in the object class
@@ -63,13 +70,49 @@ class core{
   }
   
   update(){
-
+    playerPos = camera.getCurrentXY();
+    Vector3 temp =  camera.getCurrentXY();
+    //print(temp[0]);
+    
+    
+    
+    if(temp[0] < -50.0){
+      for(int i = 0; i < containerClass.length; i++){
+        if(containerClass[i].posx == 5 && containerClass[i].posy == 1){
+          //so the tile we want does exist
+          //print("need to create");
+          tile = true;
+          
+        }
+      }
+      if(!tile){
+        print("adding tile");
+        containerClass.add(new land(gl, 1, 5));
+        containerClass[0].updateMesh(containerClass.last);
+        print(containerClass[0].meshLength());
+        print(containerClass.length);
+        print(containerClass.last.posy);
+        //tile = false;
+      }
+      
+    }
+    
+    camera.updateDirection(0.0);
+    camera.update();
   }
   
-  draw(){
+  draw(locX, locY){
     
     //gets our current view matrix
+    
     Matrix4 viewMat = camera.getViewMat();
+    
+    //add some movement
+
+    //camera.updatePos(locX, locY, 0.0);
+    
+    
+    
     //clears data        
     gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
     
