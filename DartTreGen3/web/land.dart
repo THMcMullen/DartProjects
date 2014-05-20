@@ -31,9 +31,10 @@ class land extends object{
     
     //print(y);
     
+    print("creating at X:$location and Y:$y");
     
-    posy = location; //(meshLength()/width).floor();
-    posx = y; //meshLength()%width;
+    posy = y; //(meshLength()/width).floor();
+    posx = location; //meshLength()%width;
     
     //shaders to color the landscape based on height
     String vertex = """
@@ -115,21 +116,29 @@ class land extends object{
    heightMap[d-1][d-1] = 0.0;
    
   int below = 0;
-  int beside = 0;
+  int above = 0;
+  int left = 0;
+  int right = 0;
   
   for(int i = 0; i < meshLength(); i++){
+    if((meshHeightMap(i).posx == posx+1) && (meshHeightMap(i).posy == posy)){
+      above = i;
+    }
     if((meshHeightMap(i).posx == posx-1) && (meshHeightMap(i).posy == posy)){
       //print("below me is $i");   
       below = i;
     }
     if((meshHeightMap(i).posx == posx) && (meshHeightMap(i).posy == (posy-1))){
       //print("beside me is $i");   
-      beside = i;
+      left = i;
+    }
+    if((meshHeightMap(i).posx == posx) && (meshHeightMap(i).posy == (posy+1))){
+      right = i;
     }
     
   }
    
-
+  List smooth = new List(d);
    
       
    for(int sideLength = d-1; sideLength >= 2; sideLength = sideLength ~/ 2, hi /=2 ){
@@ -170,15 +179,24 @@ class land extends object{
                  
           heightMap[x][y] = avg + offset;
           
+
+          
+          
           if(posx != 0){
             if(y == 0){
               heightMap[x][y] = meshHeightMap(below).heightMap[x][d-1];
+            }
+            if(y == d-1){
+              heightMap[x][y] = meshHeightMap(above).heightMap[x][0];
             }
           }
           //data from grid below
           if(posy != 0){
             if(x == 0){
-              heightMap[x][y] = meshHeightMap(beside).heightMap[d-1][y];
+              heightMap[x][y] = meshHeightMap(left).heightMap[d-1][y];
+            }
+            if(x == d-1){
+              heightMap[x][y] = meshHeightMap(right).heightMap[0][y];
             }
           }
           
@@ -188,12 +206,12 @@ class land extends object{
     }
    
    
-   List smooth = new List(d);
+
    
-   /*for(int i= 2; i < d-3; i++){
+   for(int i= 2; i < d-3; i++){
     smooth[i] = (heightMap[0][i] + heightMap[0][i-1] + heightMap[0][i-2] + heightMap[0][i+1] + heightMap[0][i+2])/5.0;
     heightMap[0][i] = smooth[i];
-   }*/
+   }
    for(int i= 2; i < d-3; i++){
     smooth[i] = (heightMap[d-1][i] + heightMap[d-1][i-1] + heightMap[d-1][i-2] + heightMap[d-1][i+1] + heightMap[d-1][i+2])/5.0;
     heightMap[d-1][i] = smooth[i];
@@ -202,10 +220,10 @@ class land extends object{
     smooth[i] = (heightMap[i][d-1] + heightMap[i-1][d-1] + heightMap[i-2][d-1] + heightMap[i+1][d-1] + heightMap[i+2][d-1])/5.0;
     heightMap[i][d-1] = smooth[i];
    }
-   /*for(int i= 2; i < d-3; i++){
+   for(int i= 2; i < d-3; i++){
     smooth[i] = (heightMap[i][0] + heightMap[i-1][0] + heightMap[i-2][0] + heightMap[i+1][0] + heightMap[i+2][0])/5.0;
     heightMap[i][0] = smooth[i];
-   }*/
+   }
    //heightMap[0] = smooth;
    
    
