@@ -55,13 +55,16 @@ class core{
     containerClass = new List<object>();
     
     //First create the landscape
-    for(int i = 0; i < 4; i++){
+   /* for(int i = 0; i < 4; i++){
       for(int j = 0; j < 4; j++){
         containerClass.add(new land(gl, i, j));
         
         containerClass[0].updateMesh(containerClass[j+(i*4)]);
       }
-    }
+    }*/
+    
+    containerClass.add(new land(gl, 0, 0));        
+    containerClass[0].updateMesh(containerClass[0]);
     
     //containerClass.add(new water(gl));
     //containerClass.add(new water(gl));

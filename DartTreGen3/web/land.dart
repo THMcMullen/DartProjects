@@ -76,14 +76,14 @@ class land extends object{
           float alpha = vColoring.y / 5.0;
       
       
-          if(vColoring.y < 0.0)
+          if(vColoring.y < -0.5)
             color = vec4(0.0, 0.0,1.0, 1.0+alpha );
           else if(vColoring.y < 1.5)
             color = vec4(0.3+alpha, 0.8, 0.3+alpha, 1.0);
           else
             color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
       
-          gl_FragColor = vec4(vLighting.x*color.x, vLighting.y * color.y, vLighting.z*color.z,1.0);
+          gl_FragColor = color;
           
     
     }""";
@@ -110,15 +110,15 @@ class land extends object{
     }
      
      
-   heightMap[0][0] = 0.0;
-   heightMap[0][d-1] = 0.0;
-   heightMap[d-1][0] = 0.0;
-   heightMap[d-1][d-1] = 0.0;
+   heightMap[0][0] = 0.5;
+   heightMap[0][d-1] = 0.5;
+   heightMap[d-1][0] = 0.5;
+   heightMap[d-1][d-1] = 0.5;
    
-  int below = 0;
-  int above = 0;
-  int left = 0;
-  int right = 0;
+  int below = 999;
+  int above = 999;
+  int left = 999;
+  int right = 999;
   
   for(int i = 0; i < meshLength(); i++){
     if((meshHeightMap(i).posx == posx+1) && (meshHeightMap(i).posy == posy)){
@@ -183,19 +183,19 @@ class land extends object{
           
           
           if(posx != 0){
-            if(y == 0){
+            if(y == 0 && below != 999){
               heightMap[x][y] = meshHeightMap(below).heightMap[x][d-1];
             }
-            if(y == d-1){
+            if(y == d-1 && above != 999){
               heightMap[x][y] = meshHeightMap(above).heightMap[x][0];
             }
           }
           //data from grid below
           if(posy != 0){
-            if(x == 0){
+            if(x == 0 && left != 999){
               heightMap[x][y] = meshHeightMap(left).heightMap[d-1][y];
             }
-            if(x == d-1){
+            if(x == d-1 && right != 999){
               heightMap[x][y] = meshHeightMap(right).heightMap[0][y];
             }
           }

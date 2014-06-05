@@ -240,7 +240,7 @@ class water{
       }
     }
     
-   /* for(int iy = 0; iy < Y; iy++) {
+    for(int iy = 0; iy < Y; iy++) {
       for(int ix = 0; ix < X; ix++) {
         double r = math.sqrt((ix - X/2) * (ix - X/2) + (iy - Y/2) * (iy - Y/2));
         
@@ -253,7 +253,7 @@ class water{
           //h[iy*X + ix] += ((Y/4) - r) * ((Y/4) - r);
         }
       }
-    }*//*
+    }/*
     for(int iy = 50; iy < Y-50; iy++) {
       for(int ix = 50; ix < X-50; ix++) {
         
@@ -758,12 +758,12 @@ class water{
      }
      
      //print(min);
-     
+     /*
      for(int i = 50; i < X-50; i++){
        for(int j = 50; j < Y-50; j++){
          bigArray[i][j] += 5.0;
        }
-     }
+     }*/
      /*
      for(int i = 30; i < 40; i++){
            for(int j = 30; j < 40; j++){
