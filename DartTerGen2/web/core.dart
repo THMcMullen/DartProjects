@@ -45,7 +45,12 @@ class core{
   
   //create the landscape
   createWorld(){
+    
+
+    
     worldWater = new water.water(gl);
+    
+
   }
   
   //drawing a scene
@@ -55,13 +60,20 @@ class core{
     
     gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);
     
+    //var date = new DateTime.now().millisecondsSinceEpoch;
+    
     worldWater.draw(viewMat, projectionMat);
+    
+    //var finaldate = new DateTime.now().millisecondsSinceEpoch;
+    
+    //print(finaldate - date);
     
   }
   
   //updating a scene or part of the world
   update(){
     //print("h");
+    
     worldWater.waterUpdate();
   }
   

@@ -28,7 +28,7 @@ void main() {
       nexus.update();
     }
     
-    //logic();
+    logic();
 
   }
   
