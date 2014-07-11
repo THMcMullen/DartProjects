@@ -193,6 +193,7 @@ class water{
 
   
   void initWater(){
+    
     X1 = X + 1;
     Y1 = Y + 1;
     
@@ -823,7 +824,7 @@ class water{
   }
   
   void drawWater(Matrix4 viewMat, Matrix4 projectMat){
-    
+   
     gl.useProgram(waterShader);
     
     utils.setMatrixUniforms(gl, viewMat, projectMat, waterUniforms['uPMatrix'], waterUniforms['uMVMatrix'], waterUniforms['uNormalMatrix']);

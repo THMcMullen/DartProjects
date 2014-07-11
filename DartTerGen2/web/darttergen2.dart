@@ -22,13 +22,13 @@ void main() {
   
   logic(){
     
-    var future = new Future.delayed(const Duration(milliseconds: 1), logic);
+    var future = new Future.delayed(const Duration(milliseconds: 15), logic);
     
     if(auto){
       nexus.update();
     }
     
-    logic();
+    //logic();
 
   }
   
@@ -46,12 +46,11 @@ void main() {
     //print(e.keyCode);
   }
 
-
-
-  window.onKeyDown.listen(keyDown);
   
   logic();
   render(1);
+
+  window.onKeyDown.listen(keyDown);
 
   
 }

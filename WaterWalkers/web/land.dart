@@ -83,7 +83,7 @@ class land extends object{
           else
             color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
       
-          gl_FragColor = color;
+          gl_FragColor = color*vec4(vLighting,0.5);
           
     
     }""";
@@ -139,11 +139,20 @@ class land extends object{
   }
    
   List smooth = new List(d);
-   
+  
+  int SideLength2 = d-1;
+  int grid_cnt = 0;
+  int Erosion_delay = 2;
+  
+  double r = 10.0;
+  double Roughness = 0.55;
+  double e = 0.55;
       
    for(int sideLength = d-1; sideLength >= 2; sideLength = sideLength ~/ 2, hi /=2 ){
    
     int halfSide = sideLength~/2;
+    int HalfSide2 = SideLength2 ~/ 2;
+    int QSide2 = HalfSide2 ~/ 2;
    
     for(int x = 0; x < d-1; x+=sideLength){
       for(int y = 0; y < d-1; y +=sideLength){
@@ -161,49 +170,88 @@ class land extends object{
       }
     }
      
-      for(int x = 0; x < d; x+=halfSide){
-        for(int y = (x+halfSide)%sideLength ; y < d; y+= sideLength){
+    for(int x = 0; x < d; x+=halfSide){
+      for(int y = (x+halfSide)%sideLength ; y < d; y+= sideLength){
+           
+        double avg = 
+               heightMap[(x-halfSide+d)%d][y] +
+               heightMap[(x+halfSide)%d][y]   +
+               heightMap[x][(y+halfSide)%d]   +
+               heightMap[x][(y-halfSide+d)%d];
              
-          double avg = 
-                 heightMap[(x-halfSide+d)%d][y] +
-                 heightMap[(x+halfSide)%d][y]   +
-                 heightMap[x][(y+halfSide)%d]   +
-                 heightMap[x][(y-halfSide+d)%d];
+        avg /= 4;
+             
+        double offset = (-hi) + rng.nextDouble() * (hi- (-hi));
+             
+        //if x == 0 and givenX != 0, set to buffered data
+        //if y == 0 and givenY != 0, ^
                
-          avg /= 4;
-               
-          double offset = (-hi) + rng.nextDouble() * (hi- (-hi));
-               
-          //if x == 0 and givenX != 0, set to buffered data
-          //if y == 0 and givenY != 0, ^
-                 
-          heightMap[x][y] = avg + offset;
-          
+        heightMap[x][y] = avg + offset;
+        
 
-          
-          
-          if(posx != 0){
-            if(y == 0 && below != 999){
-              heightMap[x][y] = meshHeightMap(below).heightMap[x][d-1];
-            }
-            if(y == d-1 && above != 999){
-              heightMap[x][y] = meshHeightMap(above).heightMap[x][0];
-            }
+        
+        
+        if(posx != 0){
+          if(y == 0 && below != 999){
+            heightMap[x][y] = meshHeightMap(below).heightMap[x][d-1];
           }
-          //data from grid below
-          if(posy != 0){
-            if(x == 0 && left != 999){
-              heightMap[x][y] = meshHeightMap(left).heightMap[d-1][y];
-            }
-            if(x == d-1 && right != 999){
-              heightMap[x][y] = meshHeightMap(right).heightMap[0][y];
-            }
+          if(y == d-1 && above != 999){
+            heightMap[x][y] = meshHeightMap(above).heightMap[x][0];
           }
-          
-          
         }
-      }
+        //data from grid below
+        if(posy != 0){
+          if(x == 0 && left != 999){
+            heightMap[x][y] = meshHeightMap(left).heightMap[d-1][y];
+          }
+          if(x == d-1 && right != 999){
+            heightMap[x][y] = meshHeightMap(right).heightMap[0][y];
+          }
+        }
+          
+          
+      }      
     }
+    
+    //Smothing function goes here
+    if(grid_cnt >= Erosion_delay){
+     
+    for (int x = 0; x < d-1; x += SideLength2){
+        for (int y = 0; y < d-1; y += SideLength2){
+          
+          double avg = heightMap[(x + HalfSide2+d)%d][(y + HalfSide2+d)%d]*(1-e)+
+           (heightMap[(x + QSide2+d)%d][(y + QSide2+d)%d] +
+            heightMap[(x + SideLength2 - QSide2+d)%d][(y + QSide2+d)%d] +
+            heightMap[(x + QSide2+d)%d][(y + SideLength2 - QSide2+d)%d] +
+            heightMap[(x + SideLength2 - QSide2+d)%d][(y + SideLength2 - QSide2+d)%d])
+            * e / 4;
+           
+           heightMap[(x + HalfSide2+d)%d][(y + HalfSide2+d)%d] = avg;
+      
+          }
+      }
+      
+      for (int x = 0; x < d-1; x = x + SideLength2){
+          for (int y = 0; y < d-1 ; y = y + SideLength2){
+             if (y != 0){
+               heightMap[x + HalfSide2][ y] = heightMap[x + HalfSide2][ y]*(1-e)+
+              (heightMap[x + QSide2][ y] + heightMap[x + SideLength2 - QSide2][ y] + 
+               heightMap[x + HalfSide2][ y  + QSide2] + heightMap[x + HalfSide2][ y - QSide2]) * e / 4; 
+             }
+             if (x != 0){
+               heightMap[x][ y + HalfSide2] = heightMap[x][ y + HalfSide2]*(1-e)+
+              (heightMap[x][ y + QSide2] + heightMap[x][ y + SideLength2 - QSide2] + 
+               heightMap[x + QSide2][ y + HalfSide2] + heightMap[x - QSide2][ y + HalfSide2]) * e / 4 ;
+            }
+          }
+        } 
+      SideLength2 = SideLength2 ~/ 2;  
+    }
+    
+    grid_cnt++;
+    
+    r = r / Roughness;
+  }
    
    
 
@@ -247,9 +295,9 @@ class land extends object{
     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, vertices);
     gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(vert), webgl.STATIC_DRAW);
   
-      for(int i = 0; i < d-1; i++){
-        for(int j = 0; j < d-1; j++){
-              
+    for(int i = 0; i < d-1; i++){
+      for(int j = 0; j < d-1; j++){
+            
         //the possition of the vertic in the indice array we want to draw.
         pos = (i*d+j);
            
@@ -262,13 +310,17 @@ class land extends object{
         landIndices.add(pos+d);
         landIndices.add(pos+d+1);
         landIndices.add(pos+1);
-             
+               
       }
     }
        
     indices = gl.createBuffer();
     gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, indices);
     gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(landIndices), webgl.STATIC_DRAW);
+    
+    
+    //print(landIndices);
+    
     
     //print(meshLength());
     
@@ -406,7 +458,7 @@ class land extends object{
 
   
   update(){
-    print("Creating Landscape");
+    //print("Creating Landscape");
     
   }
   

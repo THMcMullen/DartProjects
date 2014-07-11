@@ -156,6 +156,9 @@ class core{
     
     camera.updateDirection(0.0);
     camera.update();
+    for(int i = 0; i < containerClass.length; i++){
+      containerClass[i].update();
+    }
   }
   
   draw(locX, locY){

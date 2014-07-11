@@ -10,10 +10,16 @@ import 'utils.dart' as utils;
 import 'object.dart';
 import 'land.dart';
 
+
+
 //created based on the shallow water model
 class water extends object{
   
   var waterIndices;
+  
+  var blobInd;
+  
+  var len = 3;
   
   List walkerList = new List<int>();
   
@@ -73,7 +79,7 @@ class water extends object{
           else
             color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
       
-          gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+          gl_FragColor = color;//vec4(0.0,0.0,0.0,1.0);
           
     
     }""";
@@ -87,101 +93,81 @@ class water extends object{
     attribute = utils.linkAttributes(gl, shader, attrib);
     uniforms = utils.linkUniforms(gl, shader, unif);
     
+    var d = 129;
+    var posx = 0;
+    var posy = 0;
     
-    var vert =[  -1.0, -1.0,  1.0,
-                  1.0, -1.0,  1.0,
-                  1.0,  1.0,  1.0,
-                 -1.0,  1.0,  1.0,
-  
-                 // Back face
-                 -1.0, -1.0, -1.0,
-                 -1.0,  1.0, -1.0,
-                  1.0,  1.0, -1.0,
-                  1.0, -1.0, -1.0,
-  
-                 // Top face
-                 -1.0,  1.0, -1.0,
-                 -1.0,  1.0,  1.0,
-                  1.0,  1.0,  1.0,
-                  1.0,  1.0, -1.0,
-  
-                 // Bottom face
-                 -1.0, -1.0, -1.0,
-                  1.0, -1.0, -1.0,
-                  1.0, -1.0,  1.0,
-                 -1.0, -1.0,  1.0,
-  
-                 // Right face
-                  1.0, -1.0, -1.0,
-                  1.0,  1.0, -1.0,
-                  1.0,  1.0,  1.0,
-                  1.0, -1.0,  1.0,
-  
-                 // Left face
-                 -1.0, -1.0, -1.0,
-                 -1.0, -1.0,  1.0,
-                 -1.0,  1.0,  1.0,
-                 -1.0,  1.0, -1.0,
-               ];
+    var vert = new List();
+       for(double i = 0.0; i < d; i++){
+         for(double j = 0.0; j < d; j++){
+       
+           vert.add(((i+posx*d-posx)-d/8)-48);
+           vert.add(-0.5);
+           vert.add(((j+posy*d-posy)-d/8)-48);
+     
+          }
+       } 
+      
+    //print(vert);
+   vertices = gl.createBuffer();
+   gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, vertices);
+   gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(vert), webgl.STATIC_DRAW);
     
     
-    vertices = gl.createBuffer();
-    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, vertices);
-    gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(vert), webgl.STATIC_DRAW);
+    waterIndices = new List<int>();
     
-    var norm = [0.0,  0.0,  1.0,
-                0.0,  0.0,  1.0,
-                0.0,  0.0,  1.0,
-                0.0,  0.0,  1.0,
+    var pos;
 
-               // Back face
-                0.0,  0.0, -1.0,
-                0.0,  0.0, -1.0,
-                0.0,  0.0, -1.0,
-                0.0,  0.0, -1.0,
+   vertices = gl.createBuffer();
+   gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, vertices);
+   gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(vert), webgl.STATIC_DRAW);
+ 
+     for(int i = 0; i < d-1; i++){
+       for(int j = 0; j < d-1; j++){
+             
+       //the possition of the vertic in the indice array we want to draw.
+       pos = (i*d+j);
+          
+       //top half of square
+       waterIndices.add(pos);
+       waterIndices.add(pos+1);
+       waterIndices.add(pos+d);
+          
+       //bottem half of square
+       waterIndices.add(pos+d);
+       waterIndices.add(pos+d+1);
+       waterIndices.add(pos+1);
+            
+     }
+   }
+      
+   indices = gl.createBuffer();
+   gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, indices);
+   gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(waterIndices), webgl.STATIC_DRAW);
+   
+   var norm = new List();
 
-               // Top face
-                0.0,  1.0,  0.0,
-                0.0,  1.0,  0.0,
-                0.0,  1.0,  0.0,
-                0.0,  1.0,  0.0,
+       for(int x = 0; x < d ; x++){
+         for(int y = 0; y < d; y++){
+           
+           var r = new Vector3.zero();
 
-               // Bottom face
-                0.0, -1.0,  0.0,
-                0.0, -1.0,  0.0,
-                0.0, -1.0,  0.0,
-                0.0, -1.0,  0.0,
-
-               // Right face
-                1.0,  0.0,  0.0,
-                1.0,  0.0,  0.0,
-                1.0,  0.0,  0.0,
-                1.0,  0.0,  0.0,
-
-               // Left face
-               -1.0,  0.0,  0.0,
-               -1.0,  0.0,  0.0,
-               -1.0,  0.0,  0.0,
-               -1.0,  0.0,  0.0
-           ];
-    
-    normals = gl.createBuffer();
-    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, normals);
-    gl.bufferData(webgl.ARRAY_BUFFER, new Float32List.fromList(norm), webgl.STATIC_DRAW);
-    
-    waterIndices = [
-                    0, 1, 2,      0, 2, 3,    // Front face
-                    4, 5, 6,      4, 6, 7,    // Back face
-                    8, 9, 10,     8, 10, 11,  // Top face
-                    12, 13, 14,   12, 14, 15, // Bottom face
-                    16, 17, 18,   16, 18, 19, // Right face
-                    20, 21, 22,   20, 22, 23  // Left face
-                    ];
-    
-    indices = gl.createBuffer();
-    gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, indices);
-    gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(waterIndices), webgl.STATIC_DRAW);
-        
+           
+           norm.add(0.0);
+           norm.add(0.0);
+           norm.add(0.0);
+           
+           
+       }
+     }
+     
+     normals = gl.createBuffer();
+     gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, normals);
+     gl.bufferData(webgl.ARRAY_BUFFER, new Float32List.fromList(norm), webgl.STATIC_DRAW);
+       
+   
+   
+   //print(waterIndices);
     
     //print(meshHeightMap(0).heightMap);
     
@@ -201,10 +187,10 @@ class water extends object{
     var rng = new math.Random();
     //Random value to spawn walker at
 
-    
+   /* 
     List pos = new List<int>(2);
     
-    for(int i = 0; i < 100; i++){//create 5 walkers
+    for(int i = 0; i < 1000; i++){//create 5 walkers
       int locX = rng.nextInt(128);
       int locY = rng.nextInt(128);
       pos = walk(locX, locY);
@@ -228,7 +214,196 @@ class water extends object{
     
     posX = walkerList[0];
     posY = walkerList[1];
+    * 
+    * */
     
+    var nw, nn, ne, ww;
+    var minIndex;
+    var label = 1;
+    
+    List labelTable = new List();
+    labelTable.add(0);
+    
+    //walkers not the best idea, so set group level to 0, then do connected-component labeling
+    List blobMap = new List(d+2);
+    for(int i = 0; i < d+2; i++){
+     blobMap[i] = new List(d+2);
+      for(int j = 0; j < d+2; j++){
+        blobMap[i][j] = 0;
+      }
+    }
+    for(int k = 0; k < 2; k++){
+      for(int i = 1; i < d; i++){
+        for(int j = 1; j < d; j++){
+          //check if the hight at the given location is under a given height
+          if(meshHeightMap(0).heightMap[i][j] <= -0.5){
+            nw = blobMap[i-1][j-1];
+            nn = blobMap[i-1][ j ];
+            ne = blobMap[i-1][j+1];
+            ww = blobMap[ i ][j-1];
+            minIndex = ww;
+            if( 0 < nw && nw < minIndex){minIndex = nw;}
+            if( 0 < nn && nn < minIndex){minIndex = nn;}
+            if( 0 < ne && ne < minIndex){minIndex = ne;}
+            if( 0 < ww && ww < minIndex){minIndex = ww;}
+            
+            //not part of a group so join a new one
+            if(minIndex == 0){
+              blobMap[i][j] = label;
+              labelTable.add(label);
+              label++;
+            }else{//we are part of a group so set our value to that
+              if( minIndex < labelTable[nw] ){ labelTable[nw] = minIndex; }
+              if( minIndex < labelTable[nn] ){ labelTable[nn] = minIndex; }
+              if( minIndex < labelTable[ne] ){ labelTable[ne] = minIndex; }
+              if( minIndex < labelTable[ww] ){ labelTable[ww] = minIndex; }
+              
+              blobMap[i][j] = minIndex;
+            }
+            
+          }else{
+            blobMap[i][j] = 0;
+          }
+        }
+      }
+      
+      var i = labelTable.length;
+      while( i != 0 ){
+        i--;
+        label = labelTable[i];
+        while( label != labelTable[label] ){
+          label = labelTable[label];
+        }
+        labelTable[i] = label;
+      }
+       
+      for(int y=0; y<d+2; y++){
+        for(int x=0; x<d+2; x++){
+          label = blobMap[y][x];
+          if( label == 0 ){ continue; }
+          while( label != labelTable[label] ){
+            label = labelTable[label];
+          }
+          blobMap[y][x] = label;
+        }
+      }
+     
+      
+
+      
+    }
+    
+    Set uniqueLabels = new Set();
+    
+    for(int i = 0; i < labelTable.length; i++){
+      uniqueLabels.add(labelTable[i]);
+    }
+    
+    
+    List uniqueTable = new List.from(uniqueLabels);
+    print(uniqueTable);
+    //print(labelTable);
+    
+    int z = 0;
+    for(int i = 0; i < uniqueTable.length; i++){
+      for(int j = 0; j < labelTable.length; j++){
+        if(labelTable[j] == uniqueTable[i]){
+          labelTable[j] = i;
+        }
+      }
+      
+
+    }
+
+    //full with all blob info, for blob 1
+    var blobVert = new List();
+    for(int x = 1; x < d+2; x++){
+      for(int y = 1; y < d+2; y++){
+        if(blobMap[x][y] == 1){ 
+          blobVert.add(y.toDouble());
+          blobVert.add(64.5);
+          blobVert.add(x.toDouble());
+        }
+      }
+    }
+    
+    
+    
+    blobInd = new List();
+    //Try create test blob class
+    for(int x = 1; x < d+2; x++){
+      for(int y = 1; y < d+2; y++){
+        //we are part of blob 1
+        if(blobMap[y][x] == 1){
+          //test to see if below us is also blob 1
+          if(blobMap[y+1][x] == 1){
+            int current = null;
+            int cm1 = null;
+            int cp1 = null;
+            int currentp1 = null;
+            for(int i = 0; i < blobVert.length; i+=3){
+              //check to find out indice
+              if(blobVert[i] == x && blobVert[i+2] == y){
+                current = i~/3;
+              }else if(blobVert[i] == x+1 && blobVert[i+2] == y){
+                currentp1 = i~/3;
+              }else if(blobVert[i] == x && blobVert[i+2] == y+1){
+                cm1 = i~/3;
+              }else if(blobVert[i] == x+1 && blobVert[i+2] == y+1){
+                cp1 = i~/3;
+              }
+            }
+            if(cp1 == null || cm1 == null || current == null || currentp1 == null){
+             // print("$x:, \n $y:");
+            }else{
+              
+              blobInd.add(currentp1);
+              blobInd.add(cm1);
+              blobInd.add(cp1);
+              blobInd.add(current);
+              blobInd.add(currentp1);
+              blobInd.add(cm1);
+              
+
+            }
+          }
+        }
+      }
+    }
+    
+    len = blobInd.length;
+    
+    print(blobInd.length);
+    
+    
+    
+    gl.bindBuffer(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, indices);
+    gl.bufferDataTyped(webgl.RenderingContext.ELEMENT_ARRAY_BUFFER, new Uint16List.fromList(blobInd), webgl.STATIC_DRAW);
+    
+    
+    
+    
+    print(labelTable);
+     
+    var value;
+    
+    for(int i = 0; i < blobVert.length; i++){
+      blobVert[i] -= 65;
+    }
+
+    for(var a = 0; a < d; a++){
+      for(var b = 0; b < d; b++){
+          //value =(a*d)+(b); 
+                              
+          //vert[(value*3)+1] = blobMap[b][a] > 0? 10.0: 0.0;
+          
+      }
+    }  
+    
+    gl.bindBuffer(webgl.RenderingContext.ARRAY_BUFFER, vertices);  
+    gl.bufferDataTyped(webgl.ARRAY_BUFFER, new Float32List.fromList(blobVert), webgl.STATIC_DRAW);
+    //gl.bufferSubData(webgl.RenderingContext.ARRAY_BUFFER, 0, new Float32List.fromList(vert));
+
     
   }
   
@@ -288,166 +463,43 @@ class water extends object{
     
     return walker;
   }
-  
-  /*List<int> walk(){
-
-    List walker = new List<int>(2);
     
-    var rng = new math.Random();
-    //int size = 129*129;
-    int locX = rng.nextInt(128);
-    int locY = rng.nextInt(128);
-    
-    //locX = 10;
-    //locY = 10;
-    
-    print(meshHeightMap(0).heightMap[locX][locY]);
-    
-    bool walking = true;
-    
-    double lowest = 10.0;//meshHeightMap(0).heightMap[locX][locY];
-    
-    int tempX;
-    int tempY;
-    
-    List lowestValue = new List<double>(9);
-    
-    var tempCount = 0;
-   
-    while(walking){
-      
-      if(locX + 1 < 128){
-        lowestValue[0] = meshHeightMap(0).heightMap[locX+1][locY];
-      }else{
-        lowestValue[0] = 10.0;
-      }
-      if((locX + 1 < 128) && (locY - 1 > 0)){
-        lowestValue[1] = meshHeightMap(0).heightMap[locX+1][locY-1];
-      }else{
-        lowestValue[1] = 10.0;
-      }
-      if((locX + 1 < 128) && (locY + 1 < 128)){
-        lowestValue[2] = meshHeightMap(0).heightMap[locX+1][locY+1];
-      }else{
-        lowestValue[2] = 10.0;
-      }
-      if(locY + 1 < 128){
-        lowestValue[3] = meshHeightMap(0).heightMap[locX][locY+1];
-      }
-      else{
-        lowestValue[3] = 10.0;
-      }
-      
-      lowestValue[4] = meshHeightMap(0).heightMap[locX][locY];
-      
-      if(locY - 1 > 0){
-        lowestValue[5] = meshHeightMap(0).heightMap[locX][locY-1];
-      }else{
-        lowestValue[5] = 10.0;
-      }
-      if(locX - 1 > 0){
-        lowestValue[6] = meshHeightMap(0).heightMap[locX-1][locY];
-      }else{
-        lowestValue[6] = 10.0;
-      }
-      if((locX - 1 > 0) && (locY - 1 > 0)){
-        lowestValue[7] = meshHeightMap(0).heightMap[locX-1][locY-1];
-      }else{
-        lowestValue[7] = 10.0;
-      }
-      if((locX - 1 > 0) && (locY + 1 < 128)){
-        lowestValue[8] = meshHeightMap(0).heightMap[locX-1][locY+1];
-      }else{
-        lowestValue[8] = 10.0;
-      }
-      
-      
-      
-      
-      
-      
-      
-      
-      //while we move around to find a lower point we keep our walkers moving
-      
-      //check the neighbours around us to see if there is a lower value
-      //insure we do not check a area that does not exist, eg out of bounds
-      /*
-      double above = meshHeightMap(0).heightMap[locX+1][locY];
-      double aboveM1 = meshHeightMap(0).heightMap[locX+1][locY-1];
-      double aboveP1 = meshHeightMap(0).heightMap[locX+1][locY+1];
-      
-      double plus1 = meshHeightMap(0).heightMap[locX][locY+1];
-      double minus1 = meshHeightMap(0).heightMap[locX][locY-1];
-      
-      double below = meshHeightMap(0).heightMap[locX-1][locY];
-      double belowM1 = meshHeightMap(0).heightMap[locX-1][locY-1];
-      double belowP1 = meshHeightMap(0).heightMap[locX-1][locY+1];*/
-      
-      //print(tempCount++);
-      
-      for(int i = 0; i < 9; i++){
-        int change = 0;
-        if(lowestValue[i] < lowest){
-          lowest = lowestValue[i];
-        }
-      }
-      
-      int loc = lowestValue.indexOf(lowest);
-      
-      if(loc == 0){//above
-        locX = locX + 1;
-      }else if(loc == 1){//aboveM1
-        locX = locX + 1;
-        locY = locY - 1;
-      }else if(loc == 2){//aboveP1
-        locX = locX + 1;
-        locY = locY + 1;
-      }else if(loc == 3){//plus1
-        locY = locY + 1;
-      }else if(loc == 4){//center
-        walking = false;
-      }else if(loc == 5){//minus1
-        locY = locY - 1;
-      }else if(loc == 6){//below
-        locX = locX - 1;        
-      }else if(loc == 7){//belowM1
-        locX = locX - 1;
-        locY = locY - 1;
-      }else if(loc == 8){//belowP1
-        locX = locX - 1;
-        locY = locY + 1;
-      }
-      
-      print(lowest);
-      
-      
-    }
-
-    walker[0] = locX;
-    walker[1] = locY;
-
-    return walker;
-  }
-  * 
-  * */
   
   update(){
     //masterMesh[0].heightMap;
     //print("updating water");
+    /*for(int i = 0; i < 1000; i++){
+         
+         
+         List temp = new List<int>(2);
+         
+         temp = walk(walkerList[i*2+1], walkerList[i*2]);
+         
+         walkerList[i*2] = temp[1];
+         walkerList[(i*2) + 1] = temp[0];
+         
+    }*/
+         
+    
+    
   }
+  
+  
+  
+  
+  
   
   draw(Matrix4 viewMat, Matrix4 projectMat){
     //print("drawing water");
     
     //need to render 5 walkers
     
-    
-    
-    
-    
-    
     gl.useProgram(shader);
+
+    Matrix4 mv = new Matrix4.zero();
+    
+    mv = viewMat;
+
     
     
     gl.enableVertexAttribArray(attribute['aVertexPosition']);
@@ -459,30 +511,13 @@ class water extends object{
     gl.vertexAttribPointer(attribute['aVertexNormal'], 3, webgl.FLOAT, false, 0, 0);
     
     gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, indices);
-    
-    
-    for(int i = 0; i < 100; i++){
-      
-      
-      List temp = new List<int>(2);
-      
-      temp = walk(walkerList[i*2+1], walkerList[i*2]);
-      
-      walkerList[i*2] = temp[1];
-      walkerList[(i*2) + 1] = temp[0];
-      
-      
-      Matrix4 mv = viewMat.clone();
-      mv.translate((walkerList[i*2].toDouble())-64,meshHeightMap(0).heightMap[posX][posY]-0.5 ,(walkerList[(i*2)+1].toDouble())-64);
-      
-      utils.setMatrixUniforms(gl, mv, projectMat, uniforms['uPMatrix'], uniforms['uMVMatrix'], uniforms['uNormalMatrix']);
-      
-      gl.drawElements(webgl.TRIANGLES, waterIndices.length, webgl.UNSIGNED_SHORT, 0);
-      
-      mv.setZero();
-    }
 
-    //mv.translate((locX.toDouble())+64,meshHeightMap(0).heightMap[locX][locY]-5,(locY.toDouble())+64);
+      
+    utils.setMatrixUniforms(gl, mv, projectMat, uniforms['uPMatrix'], uniforms['uMVMatrix'], uniforms['uNormalMatrix']);
+      
+    gl.drawElements(webgl.TRIANGLES, len, webgl.UNSIGNED_SHORT, 0);
+
+
   }
 }
   

@@ -45,9 +45,9 @@ class camera{
     
     window.onKeyDown.listen(keyDown);
     
-    //canvas.onTouchStart.listen(touchDown);
+    canvas.onTouchStart.listen(touchDown);
     
-    //canvas.onTouchMove.listen(touchMove);
+    canvas.onTouchMove.listen(touchMove);
     
     
   }

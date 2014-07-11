@@ -55,7 +55,7 @@ class core{
   
   //drawing a scene
   draw(){
-    
+
     Matrix4 viewMat = camera.getViewMat();
     
     gl.clear(webgl.RenderingContext.COLOR_BUFFER_BIT | webgl.RenderingContext.DEPTH_BUFFER_BIT);

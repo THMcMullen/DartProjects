@@ -6,6 +6,8 @@ void main() {
   
   List temp = Init();
   
+  print("hi");
+  
   sim = GameOfLife(temp);
   temp = GameOfLife(sim);
   
