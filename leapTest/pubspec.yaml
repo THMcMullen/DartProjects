@@ -1,5 +1,0 @@
-name: leapTest
-description: A sample web application
-dependencies:
-  browser: any
-  leap_motion: any
