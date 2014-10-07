@@ -8,6 +8,9 @@ void main() {
   
   //Select the canvas as our rneder tatget
   CanvasElement canvas = querySelector("#render-target"); 
+  //canvas.requestFullscreen();
+  //canvas.width = window.innerWidth;
+  //canvas.height = window.innerHeight;
   webgl.RenderingContext gl = canvas.getContext3d();
   
   var nexus = new core(gl, canvas);

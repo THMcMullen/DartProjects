@@ -26,7 +26,9 @@ class camera{
   
   Vector3 vector = new Vector3(0.0,0.0,0.0);
   Matrix4 viewMat = new Matrix4.identity();
+  
   Matrix4 cameraMat = new Matrix4.identity();
+  
   
 
   
@@ -45,10 +47,11 @@ class camera{
     
     window.onKeyDown.listen(keyDown);
     
-    //canvas.onTouchStart.listen(touchDown);
+    canvas.onTouchStart.listen(touchDown);
     
-    //canvas.onTouchMove.listen(touchMove);
+    canvas.onTouchMove.listen(touchMove);
     
+    canvas.onTouchEnd.listen(touchUp);
     
   }
   
@@ -78,6 +81,8 @@ class camera{
     if(e.keyCode == 68){
       pos[0] += 1.0;
     }
+    
+    //print(viewMat);
     
     //print(e.keyCode);
   }
@@ -179,8 +184,8 @@ class camera{
           distance = distance - (((max(i, 5) - max(j, 5))/50));
         }
         
-        distance > 100.0 ? distance = 100.0 : distance;
-        distance < 4.0 ? distance = 4.0: distance;
+        //distance > 100.0 ? distance = 100.0 : distance;
+        //distance < 4.0 ? distance = 4.0: distance;
         
         //int tX1 = event.touches[0].client.x - movingX1;
         //movingX1 = event.touches[0].client.x;
@@ -250,6 +255,10 @@ class camera{
   }
   
   void mouseUp(MouseEvent event){
+    moving = false;
+  }
+  
+  void touchUp(TouchEvent event){
     moving = false;
   }
   

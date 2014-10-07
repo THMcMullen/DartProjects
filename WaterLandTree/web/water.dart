@@ -90,7 +90,7 @@ class waterSim{
   
       void main(void) {
 
-          gl_FragColor = vec4(vLighting, 1.0);
+          gl_FragColor = vec4(vLighting, 0.6);
 
       }""";
     

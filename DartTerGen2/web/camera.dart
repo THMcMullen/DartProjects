@@ -17,7 +17,7 @@ class camera{
   
   var orbitX = 0.0;
   var orbitY = 0.0;
-  var distance = 100.0;
+  var distance = 20.0;
   
   Vector3 vector = new Vector3(0.0,0.0,0.0);
   Matrix4 viewMat = new Matrix4.identity();
