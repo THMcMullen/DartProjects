@@ -83,7 +83,7 @@ class land extends object{
           else
             color = vec4(0.8, 0.42, 0.42, (.6 + alpha) );
       
-          gl_FragColor = color*vec4(vLighting,0.5);
+          gl_FragColor = color*vec4(0.0,0.0,0.0,1.0);
           
     
     }""";

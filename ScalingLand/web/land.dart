@@ -174,7 +174,7 @@ class land{
     }
     
     res = (res * 2) - 1;
-    var height = 0.15;
+    var height = (1/res) * 10;
     var rng = new math.Random();
     
     var tempList = new List(res);
@@ -245,7 +245,10 @@ class land{
 
   void CreateObject(landCon){
     
-    waterBlob = new blob(gl, heightMap, res);
+    
+    print("creating object at X: $locX, Y: $locY, with res: $res");
+    
+    waterBlob = new blob(gl, heightMap, res, locX, locY);
     
       
     //when creating a new tile, check to see if it has neighbours
@@ -294,8 +297,8 @@ class land{
       }
     }
     
-    for(int i = 1; i < res-2; i++){
-      for(int j = 1; j < res-2; j++){
+    for(int i = 0; i < res-1; i++){
+      for(int j = 0; j < res-1; j++){
         
         //the possition of the vertic in the indice array we want to draw.
         pos = i * res + j;
@@ -644,9 +647,13 @@ class land{
     init = true;
   }
   
+  void update(){
+    waterBlob.update();
+  }
+  
   draw(Matrix4 viewMat, Matrix4 projectMat){
     
-    waterBlob.draw();
+    
     
     gl.useProgram(shader);
         
@@ -662,6 +669,8 @@ class land{
     
     gl.bindBuffer(webgl.ELEMENT_ARRAY_BUFFER, indices);
     gl.drawElements(webgl.TRIANGLES, numberOfTri, webgl.UNSIGNED_SHORT, 0);
+    
+    waterBlob.draw(viewMat, projectMat);
     
   }
 

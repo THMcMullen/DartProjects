@@ -58,10 +58,46 @@ void main(){
   
   var land = new landscape(gl, canvas, vertShaderSource, fragShaderSource);
   
+  
+  
+  deviceMotionHandler(eventData) {
+
+        // Grab the acceleration including gravity from the results
+        var acceleration = eventData.acceleration.x;
+
+        // Grab the acceleration including gravity from the results
+        var accelerationG = eventData.accelerationIncludingGravity.x;
+
+        // Grab the acceleration including gravity from the results
+        var rotation = eventData.rotationRate.alpha;
+        
+        print("acceleration : $acceleration");
+        print("accelerationG : $accelerationG");
+        print("rotation : $rotation");
+
+   }
+
+  window.addEventListener('devicemotion', deviceMotionHandler, false);
+  
+  
   renderLoop(time){
     window.requestAnimationFrame(renderLoop);
     land.draw(gl);
+    //print(window.orientation);
+    
+    
+    
+    
+    
   }
+  
+  key(Event e){
+    window.removeEventListener('devicemotion', deviceMotionHandler, false);
+  }
+  
+  window.onTouchStart.listen(key);
+  
+  
   
   renderLoop(1);
   

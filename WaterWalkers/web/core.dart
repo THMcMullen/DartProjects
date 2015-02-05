@@ -68,6 +68,7 @@ class core{
     containerClass[0].updateMesh(containerClass[0]);
     
     containerClass.add(new water(gl));
+    
     //containerClass.add(new water(gl));
 
     

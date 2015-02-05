@@ -57,12 +57,12 @@ class water_two{
   int noise = 0;
   
   
-  water_two(givenGL, passMap){
+  water_two(givenGL, passMap, res, locX, locY){
     
     gl = givenGL;
     
-    X = 128;
-    Y = 128;
+    X = res;
+    Y = res;
     
     String verts = """
       attribute vec3 aVertexPosition;
@@ -167,13 +167,25 @@ class water_two{
        
        
        //start at one to skip the buffer
-       for(int x = 0; x < blobMap.length-1; x++){
-         for(int y = 0; y < blobMap[x].length-1; y++){
-           if(blobMap[x][y] != 0){ 
-             wVert.add(y.toDouble());
-             indMap[x][y] = wVert.length;
+       
+       
+       
+      /* for(double i = 0.0; i < res; i++){
+         for(double j = 0.0; j < res; j++){
+           vert.add(i * (128 / (res - 1)) + (128*locX) - (5*128));// + (locX*res) - res);
+           vert.add(heightMap[i.toInt()][j.toInt()]);
+           vert.add(j * (128 / (res - 1)) + (128*locY) - (5*128));// + (locY*res) - res);
+         }
+       }*/
+       
+       
+       for(double x = 1.0; x < blobMap.length-1; x++){
+         for(double y = 1.0; y < blobMap[x.toInt()].length-1; y++){
+           if(blobMap[x.toInt()][y.toInt()] != 0){ 
+             wVert.add(y);
+             indMap[x.toInt()][y.toInt()] = wVert.length;
              wVert.add(-0.5);
-             wVert.add(x.toDouble());
+             wVert.add(x);
            }
          }
        }
@@ -244,6 +256,19 @@ class water_two{
        //  print(waterMap[i]); 
        //}
        
+       int tempCounter = 0;
+       
+       for(double x = 1.0; x < blobMap.length-1; x++){
+         for(double y = 1.0; y < blobMap[x.toInt()].length-1; y++){
+           if(blobMap[x.toInt()][y.toInt()] != 0){ 
+             wVert[tempCounter] = y * (128 / (res - 1)) + (128*locX) - (5*128);
+             tempCounter += 2;
+
+             wVert[tempCounter] = x * (128 / (res - 1)) + (128*locY) - (5*128);
+             tempCounter++;
+           }
+         }
+       }
        
        
        
@@ -419,8 +444,6 @@ class water_two{
             h1[iy*X + ix]  = h[iy*X + ix];
           }
         }
-        
-        
 
         // Horizontal Velocity
         for(int iy = 0; iy < Y; iy++) {
@@ -438,9 +461,13 @@ class water_two{
           }
         }
         
-
-        
-        /*for(int iy = 0; iy < Y; iy++) {
+        /*for(int i = 0; i < h.length; i++){
+          if(h[i] != 0){
+            print(h[i]);
+          }
+        }*/
+        /*
+        for(int iy = 0; iy < Y; iy++) {
               for(int ix = 0; ix < X; ix++) {
                 double r = math.sqrt((ix - X/2) * (ix - X/2) + (iy - Y/2) * (iy - Y/2));
                 
@@ -572,8 +599,7 @@ class water_two{
           upwind(1);
           upwind(2);
           
-
-          
+                
           
           
           // Update h
@@ -687,6 +713,17 @@ class water_two{
           }else{
             noise++;
           }
+          
+          /*
+           * view-source:http://www.ibiblio.org/e-notes/webgl/waves/water.html
+          for ( var i = 1; i < n1; i++ )
+            for ( var j = 1; j < n1; j++ ){
+                 normz[t++] = h[i][j+1] - h[i][j-1];
+                 normz[t++] = h[i+1][j] - h[i-1][j];
+                 normz[t++] = h[i][j];
+            }
+          */
+          
           
           var norm = new List();
           for(int x = 1; x < X; x++){

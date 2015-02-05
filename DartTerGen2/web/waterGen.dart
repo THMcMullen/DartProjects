@@ -759,20 +759,20 @@ class water{
      }
      
      //print(min);
-     /*
+     
      for(int i = 50; i < X-50; i++){
        for(int j = 50; j < Y-50; j++){
          bigArray[i][j] += 5.0;
        }
-     }*/
-     /*
+     }
+     
      for(int i = 30; i < 40; i++){
            for(int j = 30; j < 40; j++){
              bigArray[i][j] += 15.0;
            }
          }
 
-    */ 
+     
      
      var vert = new List();
      for(double i = 0.0; i < d; i++){

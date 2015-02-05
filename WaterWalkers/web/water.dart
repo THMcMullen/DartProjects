@@ -30,6 +30,7 @@ class water extends object{
   
   
   water(webgl.RenderingContext givenGL){
+    print("hello");
     gl = givenGL;
     
     //shaders to color the landscape based on height

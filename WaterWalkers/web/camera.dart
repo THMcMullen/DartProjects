@@ -36,7 +36,7 @@ class camera{
   
   camera(CanvasElement givenCanvas){
     canvas = givenCanvas;
-    
+        
     canvas.onMouseDown.listen(mouseDown);
     
     canvas.onMouseMove.listen(mouseMove);

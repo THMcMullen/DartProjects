@@ -51,7 +51,7 @@ class dart_matter{
     
     landCon[5][5] = new land(gl, 5, 5, baseRes);
     landCon[5][6] = new land(gl, 5, 6, baseRes);
-    landCon[5][4] = new land(gl, 5, 4, baseRes);
+    landCon[5][4] = new land(gl, 5, 4, (baseRes+1)~/2);
     landCon[6][5] = new land(gl, 6, 5, baseRes);
     landCon[4][5] = new land(gl, 4, 5, baseRes);
     landCon[4][4] = new land(gl, 4, 4, (baseRes+1)~/2);
@@ -129,6 +129,25 @@ class dart_matter{
   //if the user has moved to much, create a new tile, update older ones, remove those that are to far away
   update(){
     camera.update();
+    
+    landCon[4][4].update();
+    landCon[6][4].update();
+    landCon[6][6].update();
+    landCon[4][6].update();
+    
+    landCon[3][5].update();
+    landCon[7][5].update();
+    landCon[5][7].update();
+    landCon[5][3].update();
+    
+
+    //high res
+    landCon[6][5].update();
+    landCon[5][4].update();
+    landCon[5][6].update();
+    landCon[4][5].update();
+    landCon[5][5].update();
+    
   }
 
   
