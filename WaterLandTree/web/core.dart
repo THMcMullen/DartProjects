@@ -50,7 +50,13 @@ class core{
   
   update(){
     camera.update();
-    containerClass[1].update();
+    containerClass[1].update(); 
+    List<Gamepad> gamepads = window.navigator.getGamepads();
+    for(Gamepad gamepad in gamepads) {
+      if(gamepad != null) {
+        camera.gamepaddata(gamepad);
+      }
+    }
   }
   
   draw(){

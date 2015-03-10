@@ -13,6 +13,17 @@ void main() {
   //canvas.height = window.innerHeight;
   webgl.RenderingContext gl = canvas.getContext3d();
   
+  Gamepad temp;
+  
+  temp = window.navigator.getGamepads().last;
+  print("###---###");
+  if(temp != 'null'){
+    print(temp);
+  }else{
+    print("nope");
+  }
+  print("###---###");
+  
   var nexus = new core(gl, canvas);
   
   //set up the enviroment

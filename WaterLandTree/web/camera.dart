@@ -53,6 +53,35 @@ class camera{
     
     canvas.onTouchEnd.listen(touchUp);
     
+    
+    
+  }
+  
+  void gamepaddata(Gamepad pad){
+    //print(pad.axes);
+    pos[1] = pad.axes[3];
+    
+    pos[0] = pad.axes[2];
+    
+    orbitY -= pad.axes[0] * 0.025;
+    while(orbitY < 0){
+      orbitY += 3.14*2;
+    }
+    while(orbitY >= 3.14*2){
+      orbitY -=3.14*2;
+    }
+    
+    orbitX -= pad.axes[1] * 0.025;
+    
+    while(orbitX < 0){
+      orbitX += 3.14*2;
+    }
+    while(orbitX >= 3.14*2){
+      orbitX -= 3.14*2;
+    }
+    
+    
+    
   }
   
   Vector3 getCurrentXY(){
