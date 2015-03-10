@@ -8,7 +8,7 @@ void main() {
   //Select the canvas as our rneder tatget
   CanvasElement canvas = querySelector("#render-target"); 
   //canvas.requestFullscreen();
-  
+  print("hi");
   webgl.RenderingContext gl = canvas.getContext3d();
   
   var nexus = new dart_matter(gl, canvas);
